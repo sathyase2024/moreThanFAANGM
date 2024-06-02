@@ -659,6 +659,7 @@ PLEASE DON'T CHANGE THE NUMBERING. KEEP EVERYTHING STARTING WITH 1.
 <li><a href="https://spinny.freshteam.com/jobs">Spinny</a>  </li>
 <li><a href="https://www.sprinklr.com/careers/">Sprinklr</a></li>
 <li><a href="https://www.squadstack.com/careers/">Squadstack</a></li>
+<li><a href="https://www.srihayavadhana.com/contacts/">Sri Hayavadhana</a></li>
 <li><a href="https://stripe.com/in/jobs">Stripe</a>  </li>
 <li><a href="https://sureify.com/careers/">Sureify</a></li>
 <li><a href="https://careers.swiggy.com/">Swiggy</a>  </li>
