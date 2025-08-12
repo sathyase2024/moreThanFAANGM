@@ -45,7 +45,7 @@ class AA3D_Plugin {
             true
         );
 
-        // Our viewer script (ES module compiled to IIFE for WP compatibility)
+        // Our viewer script
         wp_register_script(
             'aa3d-viewer',
             AA3D_PLUGIN_URL . 'assets/aa3d-viewer.js',
@@ -62,11 +62,21 @@ class AA3D_Plugin {
             filemtime( AA3D_PLUGIN_DIR . 'assets/aa3d-designer.js' ),
             true
         );
+
+        // Room designer script
+        wp_register_script(
+            'aa3d-room-designer',
+            AA3D_PLUGIN_URL . 'assets/aa3d-room-designer.js',
+            [ 'three', 'three-orbitcontrols' ],
+            filemtime( AA3D_PLUGIN_DIR . 'assets/aa3d-room-designer.js' ),
+            true
+        );
     }
 
     public function register_shortcodes() {
         add_shortcode( 'aa3d', [ $this, 'render_viewer_shortcode' ] );
         add_shortcode( 'aa3d_designer', [ $this, 'render_designer_shortcode' ] );
+        add_shortcode( 'aa3d_room_designer', [ $this, 'render_room_designer_shortcode' ] );
     }
 
     /**
@@ -164,6 +174,40 @@ class AA3D_Plugin {
         $html .= '<p>Embedding is blocked by the source site. Open in a new window:</p>';
         $html .= '<a class="aa3d-designer-open" href="'. $safe_src .'" target="_blank" rel="noopener">Open Designer</a>';
         $html .= '</div></div>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * Shortcode: [aa3d_room_designer width_ft="15" length_ft="20" height_ft="9" screen_in="120"]
+     */
+    public function render_room_designer_shortcode( $atts ) {
+        $atts = shortcode_atts( [
+            'width_ft' => '15',
+            'length_ft' => '20',
+            'height_ft' => '9',
+            'screen_in' => '120',
+        ], $atts, 'aa3d_room_designer' );
+
+        wp_enqueue_style( 'aa3d-style' );
+        wp_enqueue_script( 'aa3d-room-designer' );
+
+        $id = 'aa3d-room-' . wp_generate_uuid4();
+
+        $data_attr_html = ' data-width-ft="' . esc_attr( $atts['width_ft'] ) . '"';
+        $data_attr_html .= ' data-length-ft="' . esc_attr( $atts['length_ft'] ) . '"';
+        $data_attr_html .= ' data-height-ft="' . esc_attr( $atts['height_ft'] ) . '"';
+        $data_attr_html .= ' data-screen-in="' . esc_attr( $atts['screen_in'] ) . '"';
+
+        $html  = '<div class="aa3d-room-wrapper">';
+        $html .= '<div class="aa3d-room-ui">';
+        $html .= '<label>Width (ft) <input type="number" class="aa3d-room-input" data-key="width_ft" min="6" max="40" step="0.5" value="'. esc_attr( $atts['width_ft'] ) .'"></label>';
+        $html .= '<label>Length (ft) <input type="number" class="aa3d-room-input" data-key="length_ft" min="8" max="60" step="0.5" value="'. esc_attr( $atts['length_ft'] ) .'"></label>';
+        $html .= '<label>Height (ft) <input type="number" class="aa3d-room-input" data-key="height_ft" min="7" max="20" step="0.5" value="'. esc_attr( $atts['height_ft'] ) .'"></label>';
+        $html .= '<label>Screen (in) <input type="number" class="aa3d-room-input" data-key="screen_in" min="60" max="200" step="1" value="'. esc_attr( $atts['screen_in'] ) .'"></label>';
+        $html .= '</div>';
+        $html .= '<canvas id="'. esc_attr($id) .'" class="aa3d-canvas aa3d-room-canvas"'. $data_attr_html .'></canvas>';
         $html .= '</div>';
 
         return $html;

@@ -42,6 +42,18 @@ Some sites set `X-Frame-Options` or `Content-Security-Policy: frame-ancestors` t
 
 To avoid blocking, use a proper embed URL from the provider (if available) or host your own experience. The `[aa3d]` shortcode loads models you host yourself and is not affected by third-party iframe policies.
 
+## Built-in Room Designer (beta)
+Add a parametric room with basic seating and a screen:
+
+```
+[aa3d_room_designer width_ft="15" length_ft="20" height_ft="9" screen_in="120"]
+```
+
+- `width_ft`, `length_ft`, `height_ft`: room dimensions in feet
+- `screen_in`: 16:9 screen diagonal in inches
+
+Use the on-canvas panel to tweak dimensions interactively. This is a starting point to build your own tool similar to Audio Advice’s designer.
+
 ## Notes
 
 - Three.js and loaders are loaded from a CDN for simplicity.
