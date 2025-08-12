@@ -74,7 +74,11 @@
     const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
     renderer.setSize(width, height, false);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace || THREE.sRGBEncoding; // for older/newer versions
+    if (renderer.outputColorSpace !== undefined && THREE.SRGBColorSpace !== undefined) {
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+    } else if (renderer.outputEncoding !== undefined && THREE.sRGBEncoding !== undefined) {
+      renderer.outputEncoding = THREE.sRGBEncoding;
+    }
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = exposure;
     renderer.shadowMap.enabled = true;

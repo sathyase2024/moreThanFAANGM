@@ -92,7 +92,11 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
     renderer.setSize(w, h, false);
     renderer.shadowMap.enabled = true;
-    renderer.outputColorSpace = THREE.SRGBColorSpace || THREE.sRGBEncoding;
+    if (renderer.outputColorSpace !== undefined && THREE.SRGBColorSpace !== undefined) {
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+    } else if (renderer.outputEncoding !== undefined && THREE.sRGBEncoding !== undefined) {
+      renderer.outputEncoding = THREE.sRGBEncoding;
+    }
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
     var scene = new THREE.Scene();
