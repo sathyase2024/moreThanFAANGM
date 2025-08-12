@@ -131,6 +131,7 @@
     var roomGroup = new THREE.Group(); scene.add(roomGroup);
 
     var seatRows = [];
+    var overlay = wrapper.querySelector('.aa3d-room-overlay');
 
     function rebuild(){
       // Clear
@@ -147,20 +148,35 @@
       var screen = createScreenPlane(cfg.screen_in, length_m);
       roomGroup.add(screen);
 
-      var row1 = createSeatRow(3, 0.9);
-      row1.position.set(0, 0.45, -length_m*0.25);
-      var row2 = createSeatRow(3, 0.9);
-      row2.position.set(0, 0.45, -length_m*0.45);
-      seatRows.push(row1, row2);
-      roomGroup.add(row1); roomGroup.add(row2);
+      var rows = Math.max(1, Math.min(4, Math.round(cfg.rows || 2)));
+      var seatsPer = Math.max(1, Math.min(6, Math.round(cfg.seats_per_row || 3)));
+      var spacing = Math.max(0.6, (cfg.row_spacing_ft || 4) * FT_TO_M);
+      var riser_h = Math.max(0, (cfg.riser_in || 8) * 0.0254);
+      for (var r=0; r<rows; r++){
+        var row = createSeatRow(seatsPer, 0.9);
+        var z = -length_m*0.25 - r * spacing;
+        row.position.set(0, 0.45 + r * riser_h, z);
+        seatRows.push(row);
+        roomGroup.add(row);
+      }
 
       fitCamera(scene, camera, controls, roomGroup);
+
+      // Overlay guidance (very simplified viewing distance guidance)
+      if (overlay){
+        var viewDist_m = Math.abs((seatRows[0] ? seatRows[0].position.z : -length_m*0.25));
+        var diag_m = (cfg.screen_in||120) * 0.0254;
+        var recommended_m = diag_m * 1.6; // rough THX-ish multiplier
+        var delta = viewDist_m - recommended_m;
+        var msg = 'Viewing distance: ' + viewDist_m.toFixed(2) + 'm (recommended ~' + recommended_m.toFixed(2) + 'm)';
+        overlay.innerHTML = '<span class="aa3d-badge">' + msg + '</span>';
+      }
     }
 
     function onInputChange(e){
       var key = e.target.getAttribute('data-key');
-      var val = parseFloat(e.target.value);
-      if (!isFinite(val)) return;
+      var val = (e.target.type === 'number') ? parseFloat(e.target.value) : e.target.value;
+      if (e.target.type === 'number' && !isFinite(val)) return;
       if (key in cfg) cfg[key] = val;
       // mirror to data- attrs
       canvas.setAttribute('data-' + key.replace(/_/g,'-'), String(val));
@@ -215,6 +231,24 @@
       btnAutorotate.addEventListener('click', function(){
         controls.autoRotate = !controls.autoRotate;
         btnAutorotate.classList.toggle('is-active', controls.autoRotate);
+      });
+    }
+
+    var btnShare = toolbar && toolbar.querySelector('.aa3d-btn-share');
+    if (btnShare){
+      btnShare.addEventListener('click', function(){
+        var params = new URLSearchParams();
+        Object.keys(cfg).forEach(function(k){ params.set(k, String(cfg[k])); });
+        var shareUrl = window.location.origin + window.location.pathname + '#' + params.toString();
+        navigator.clipboard && navigator.clipboard.writeText(shareUrl);
+        if (overlay){ overlay.innerHTML = '<span class="aa3d-badge">Link copied</span>'; }
+      });
+    }
+
+    var btnReport = toolbar && toolbar.querySelector('.aa3d-btn-report');
+    if (btnReport){
+      btnReport.addEventListener('click', function(){
+        window.print();
       });
     }
 

@@ -180,7 +180,7 @@ class AA3D_Plugin {
     }
 
     /**
-     * Shortcode: [aa3d_room_designer width_ft="15" length_ft="20" height_ft="9" screen_in="120"]
+     * Shortcode: [aa3d_room_designer width_ft="15" length_ft="20" height_ft="9" screen_in="120" rows="2" seats_per_row="3" row_spacing_ft="4" riser_in="8" layout="5.1" shop_screens_url="" shop_seating_url="" shop_speakers_url=""]
      */
     public function render_room_designer_shortcode( $atts ) {
         $atts = shortcode_atts( [
@@ -188,6 +188,14 @@ class AA3D_Plugin {
             'length_ft' => '20',
             'height_ft' => '9',
             'screen_in' => '120',
+            'rows' => '2',
+            'seats_per_row' => '3',
+            'row_spacing_ft' => '4',
+            'riser_in' => '8',
+            'layout' => '5.1',
+            'shop_screens_url' => '',
+            'shop_seating_url' => '',
+            'shop_speakers_url' => '',
         ], $atts, 'aa3d_room_designer' );
 
         wp_enqueue_style( 'aa3d-style' );
@@ -199,6 +207,11 @@ class AA3D_Plugin {
         $data_attr_html .= ' data-length-ft="' . esc_attr( $atts['length_ft'] ) . '"';
         $data_attr_html .= ' data-height-ft="' . esc_attr( $atts['height_ft'] ) . '"';
         $data_attr_html .= ' data-screen-in="' . esc_attr( $atts['screen_in'] ) . '"';
+        $data_attr_html .= ' data-rows="' . esc_attr( $atts['rows'] ) . '"';
+        $data_attr_html .= ' data-seats-per-row="' . esc_attr( $atts['seats_per_row'] ) . '"';
+        $data_attr_html .= ' data-row-spacing-ft="' . esc_attr( $atts['row_spacing_ft'] ) . '"';
+        $data_attr_html .= ' data-riser-in="' . esc_attr( $atts['riser_in'] ) . '"';
+        $data_attr_html .= ' data-layout="' . esc_attr( $atts['layout'] ) . '"';
 
         $html  = '<div class="aa3d-room-wrapper">';
         $html .= '<div class="aa3d-room-toolbar">';
@@ -206,14 +219,35 @@ class AA3D_Plugin {
         $html .= '<button type="button" class="aa3d-btn aa3d-btn-fullscreen" title="Fullscreen">Fullscreen</button>';
         $html .= '<button type="button" class="aa3d-btn aa3d-btn-screenshot" title="Screenshot">Screenshot</button>';
         $html .= '<button type="button" class="aa3d-btn aa3d-btn-autorotate" title="Toggle Auto-Rotate">Auto-Rotate</button>';
+        $html .= '<button type="button" class="aa3d-btn aa3d-btn-report" title="Report">Report</button>';
+        $html .= '<button type="button" class="aa3d-btn aa3d-btn-share" title="Share">Share</button>';
         $html .= '<label class="aa3d-preset-label">Preset <select class="aa3d-select aa3d-select-preset"><option value="">Custom</option><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option></select></label>';
         $html .= '</div>';
         $html .= '<div class="aa3d-room-ui">';
+        $html .= '<label>Layout <select class="aa3d-room-input aa3d-select" data-key="layout"><option value="5.1"'. selected( $atts['layout'], '5.1', false ) .'>5.1</option><option value="7.1"'. selected( $atts['layout'], '7.1', false ) .'>7.1</option><option value="5.1.2"'. selected( $atts['layout'], '5.1.2', false ) .'>5.1.2</option></select></label>';
+        $html .= '<label>Rows <input type="number" class="aa3d-room-input" data-key="rows" min="1" max="4" step="1" value="'. esc_attr( $atts['rows'] ) .'"></label>';
+        $html .= '<label>Seats/Row <input type="number" class="aa3d-room-input" data-key="seats_per_row" min="1" max="6" step="1" value="'. esc_attr( $atts['seats_per_row'] ) .'"></label>';
+        $html .= '<label>Row Spacing (ft) <input type="number" class="aa3d-room-input" data-key="row_spacing_ft" min="2" max="10" step="0.5" value="'. esc_attr( $atts['row_spacing_ft'] ) .'"></label>';
+        $html .= '<label>Riser (in) <input type="number" class="aa3d-room-input" data-key="riser_in" min="0" max="18" step="0.5" value="'. esc_attr( $atts['riser_in'] ) .'"></label>';
         $html .= '<label>Width (ft) <input type="number" class="aa3d-room-input" data-key="width_ft" min="6" max="40" step="0.5" value="'. esc_attr( $atts['width_ft'] ) .'"></label>';
         $html .= '<label>Length (ft) <input type="number" class="aa3d-room-input" data-key="length_ft" min="8" max="60" step="0.5" value="'. esc_attr( $atts['length_ft'] ) .'"></label>';
         $html .= '<label>Height (ft) <input type="number" class="aa3d-room-input" data-key="height_ft" min="7" max="20" step="0.5" value="'. esc_attr( $atts['height_ft'] ) .'"></label>';
         $html .= '<label>Screen (in) <input type="number" class="aa3d-room-input" data-key="screen_in" min="60" max="200" step="1" value="'. esc_attr( $atts['screen_in'] ) .'"></label>';
+        if ( ! empty( $atts['shop_screens_url'] ) || ! empty( $atts['shop_seating_url'] ) || ! empty( $atts['shop_speakers_url'] ) ) {
+            $html .= '<div class="aa3d-room-shop">';
+            if ( ! empty( $atts['shop_screens_url'] ) ) {
+                $html .= '<a class="aa3d-btn" target="_blank" rel="noopener" href="' . esc_url( $atts['shop_screens_url'] ) . '">Shop Screens</a>';
+            }
+            if ( ! empty( $atts['shop_seating_url'] ) ) {
+                $html .= '<a class="aa3d-btn" target="_blank" rel="noopener" href="' . esc_url( $atts['shop_seating_url'] ) . '">Shop Seating</a>';
+            }
+            if ( ! empty( $atts['shop_speakers_url'] ) ) {
+                $html .= '<a class="aa3d-btn" target="_blank" rel="noopener" href="' . esc_url( $atts['shop_speakers_url'] ) . '">Shop Speakers</a>';
+            }
+            $html .= '</div>';
+        }
         $html .= '</div>';
+        $html .= '<div class="aa3d-room-overlay" aria-live="polite"></div>';
         $html .= '<canvas id="'. esc_attr($id) .'" class="aa3d-canvas aa3d-room-canvas"'. $data_attr_html .'></canvas>';
         $html .= '</div>';
 
