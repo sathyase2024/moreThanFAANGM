@@ -37,6 +37,11 @@ Use this to embed a hosted designer (e.g., a custom app similar to Audio Advice�
 - `allow` (optional): feature policy string
 - `loading` (optional): `lazy|eager`
 
+### Iframe restrictions
+Some sites set `X-Frame-Options` or `Content-Security-Policy: frame-ancestors` to block embedding. If your `src` is blocked, the plugin shows an overlay with an “Open Designer” button to launch the tool in a new window.
+
+To avoid blocking, use a proper embed URL from the provider (if available) or host your own experience. The `[aa3d]` shortcode loads models you host yourself and is not affected by third-party iframe policies.
+
 ## Notes
 
 - Three.js and loaders are loaded from a CDN for simplicity.

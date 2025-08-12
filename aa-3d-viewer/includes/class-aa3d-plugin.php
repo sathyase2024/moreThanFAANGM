@@ -53,6 +53,15 @@ class AA3D_Plugin {
             filemtime( AA3D_PLUGIN_DIR . 'assets/aa3d-viewer.js' ),
             true
         );
+
+        // Designer helper script for iframe fallback handling
+        wp_register_script(
+            'aa3d-designer',
+            AA3D_PLUGIN_URL . 'assets/aa3d-designer.js',
+            [],
+            filemtime( AA3D_PLUGIN_DIR . 'assets/aa3d-designer.js' ),
+            true
+        );
     }
 
     public function register_shortcodes() {
@@ -136,12 +145,25 @@ class AA3D_Plugin {
         }
 
         wp_enqueue_style( 'aa3d-style' );
+        wp_enqueue_script( 'aa3d-designer' );
 
         $height = preg_replace('/[^0-9]/', '', $atts['height']);
         $height_style = $height ? ' style="height:'. esc_attr( $height ) .'px"' : '';
 
-        $html  = '<div class="aa3d-designer-wrapper"'. $height_style .'>';
-        $html .= '<iframe class="aa3d-designer-iframe" src="'. esc_url( $atts['src'] ) .'" title="'. esc_attr( $atts['title'] ) .'" allow="'. esc_attr( $atts['allow'] ) .'" loading="'. esc_attr( $atts['loading'] ) .'" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>';
+        $safe_src = esc_url( $atts['src'] );
+        $safe_title = esc_attr( $atts['title'] );
+        $safe_allow = esc_attr( $atts['allow'] );
+        $safe_loading = esc_attr( $atts['loading'] );
+
+        $id = 'aa3d-designer-' . wp_generate_uuid4();
+
+        $html  = '<div id="'. esc_attr($id) .'" class="aa3d-designer-wrapper"'. $height_style .' data-src="'. $safe_src .'">';
+        $html .= '<iframe class="aa3d-designer-iframe" src="'. $safe_src .'" title="'. $safe_title .'" allow="'. $safe_allow .'" loading="'. $safe_loading .'" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>';
+        $html .= '<div class="aa3d-designer-overlay" hidden>'; 
+        $html .= '<div class="aa3d-designer-overlay-content">';
+        $html .= '<p>Embedding is blocked by the source site. Open in a new window:</p>';
+        $html .= '<a class="aa3d-designer-open" href="'. $safe_src .'" target="_blank" rel="noopener">Open Designer</a>';
+        $html .= '</div></div>';
         $html .= '</div>';
 
         return $html;
