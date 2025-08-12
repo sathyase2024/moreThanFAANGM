@@ -201,6 +201,13 @@ class AA3D_Plugin {
         $data_attr_html .= ' data-screen-in="' . esc_attr( $atts['screen_in'] ) . '"';
 
         $html  = '<div class="aa3d-room-wrapper">';
+        $html .= '<div class="aa3d-room-toolbar">';
+        $html .= '<button type="button" class="aa3d-btn aa3d-btn-reset" title="Reset">Reset</button>';
+        $html .= '<button type="button" class="aa3d-btn aa3d-btn-fullscreen" title="Fullscreen">Fullscreen</button>';
+        $html .= '<button type="button" class="aa3d-btn aa3d-btn-screenshot" title="Screenshot">Screenshot</button>';
+        $html .= '<button type="button" class="aa3d-btn aa3d-btn-autorotate" title="Toggle Auto-Rotate">Auto-Rotate</button>';
+        $html .= '<label class="aa3d-preset-label">Preset <select class="aa3d-select aa3d-select-preset"><option value="">Custom</option><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option></select></label>';
+        $html .= '</div>';
         $html .= '<div class="aa3d-room-ui">';
         $html .= '<label>Width (ft) <input type="number" class="aa3d-room-input" data-key="width_ft" min="6" max="40" step="0.5" value="'. esc_attr( $atts['width_ft'] ) .'"></label>';
         $html .= '<label>Length (ft) <input type="number" class="aa3d-room-input" data-key="length_ft" min="8" max="60" step="0.5" value="'. esc_attr( $atts['length_ft'] ) .'"></label>';

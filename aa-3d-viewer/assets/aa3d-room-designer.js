@@ -70,9 +70,24 @@
     controls.update();
   }
 
+  function downloadDataURI(filename, dataURI){
+    var link = document.createElement('a');
+    link.download = filename;
+    link.href = dataURI;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   function initCanvas(canvas){
     var wrapper = canvas.parentElement;
     var ui = wrapper.querySelector('.aa3d-room-ui');
+    var toolbar = wrapper.querySelector('.aa3d-room-toolbar');
+    var btnReset = toolbar && toolbar.querySelector('.aa3d-btn-reset');
+    var btnFullscreen = toolbar && toolbar.querySelector('.aa3d-btn-fullscreen');
+    var btnScreenshot = toolbar && toolbar.querySelector('.aa3d-btn-screenshot');
+    var btnAutorotate = toolbar && toolbar.querySelector('.aa3d-btn-autorotate');
+    var selectPreset = toolbar && toolbar.querySelector('.aa3d-select-preset');
 
     function readConfig(){
       return {
@@ -84,6 +99,7 @@
     }
 
     var cfg = readConfig();
+    var initialCfg = JSON.parse(JSON.stringify(cfg));
 
     var w = canvas.clientWidth || canvas.parentElement.clientWidth || 800;
     var h = canvas.clientHeight || 520;
@@ -107,6 +123,7 @@
 
     var controls = new THREE.OrbitControls(camera, canvas);
     controls.enableDamping = true; controls.dampingFactor = 0.08; controls.enablePan = true;
+    controls.autoRotate = false;
 
     var hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0); hemi.position.set(0, 1, 0); scene.add(hemi);
     var dir = new THREE.DirectionalLight(0xffffff, 1.0); dir.position.set(5, 10, 7.5); dir.castShadow = true; scene.add(dir);
@@ -154,6 +171,59 @@
       $all('.aa3d-room-input', ui).forEach(function(input){
         input.addEventListener('input', onInputChange);
         input.addEventListener('change', onInputChange);
+      });
+    }
+
+    // Toolbar actions
+    function applyCfg(newCfg){
+      cfg = Object.assign({}, cfg, newCfg);
+      // reflect UI values if present
+      if (ui){
+        $all('.aa3d-room-input', ui).forEach(function(input){
+          var key = input.getAttribute('data-key');
+          if (key in cfg) input.value = cfg[key];
+        });
+      }
+      rebuild();
+    }
+
+    if (btnReset){
+      btnReset.addEventListener('click', function(){ applyCfg(initialCfg); });
+    }
+
+    if (btnFullscreen){
+      btnFullscreen.addEventListener('click', function(){
+        var el = canvas;
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else if (el.requestFullscreen) {
+          el.requestFullscreen();
+        }
+      });
+    }
+
+    if (btnScreenshot){
+      btnScreenshot.addEventListener('click', function(){
+        try {
+          var data = canvas.toDataURL('image/png');
+          downloadDataURI('room-designer.png', data);
+        } catch (e) {}
+      });
+    }
+
+    if (btnAutorotate){
+      btnAutorotate.addEventListener('click', function(){
+        controls.autoRotate = !controls.autoRotate;
+        btnAutorotate.classList.toggle('is-active', controls.autoRotate);
+      });
+    }
+
+    if (selectPreset){
+      selectPreset.addEventListener('change', function(){
+        var v = selectPreset.value;
+        if (v === 'small') applyCfg({ width_ft: 12, length_ft: 16, height_ft: 8, screen_in: 100 });
+        else if (v === 'medium') applyCfg({ width_ft: 15, length_ft: 20, height_ft: 9, screen_in: 120 });
+        else if (v === 'large') applyCfg({ width_ft: 20, length_ft: 28, height_ft: 10, screen_in: 150 });
       });
     }
 
