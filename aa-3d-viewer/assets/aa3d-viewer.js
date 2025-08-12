@@ -5,6 +5,22 @@
     return Array.prototype.slice.call((root || document).querySelectorAll(selector));
   }
 
+  function showError(wrapper, message){
+    if (!wrapper) return;
+    var el = document.createElement('div');
+    el.style.position = 'absolute';
+    el.style.inset = '0';
+    el.style.display = 'grid';
+    el.style.placeItems = 'center';
+    el.style.background = 'rgba(0,0,0,0.6)';
+    el.style.color = '#fff';
+    el.style.zIndex = '3';
+    el.style.textAlign = 'center';
+    el.style.padding = '16px';
+    el.textContent = message;
+    wrapper.appendChild(el);
+  }
+
   function parseBoolean(value, fallback){
     if (typeof value === 'boolean') return value;
     if (typeof value === 'string') {
@@ -54,6 +70,11 @@
 
   function initCanvas(canvas){
     const wrapper = canvas.parentElement;
+    if (typeof THREE === 'undefined' || !THREE.WebGLRenderer) {
+      showError(wrapper, '3D dependencies failed to load. Check internet connection and plugin scripts.');
+      return;
+    }
+
     const posterEl = wrapper.querySelector('.aa3d-poster');
     const arButton = wrapper.querySelector('.aa3d-ar-button');
 
@@ -71,7 +92,13 @@
     const maxPolarAngle = canvas.getAttribute('data-max-polar-angle');
     const minPolarAngle = canvas.getAttribute('data-min-polar-angle');
 
-    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+    } catch (e) {
+      showError(wrapper, 'WebGL initialization failed. Your browser or device may not support WebGL.');
+      return;
+    }
     renderer.setSize(width, height, false);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     if (renderer.outputColorSpace !== undefined && THREE.SRGBColorSpace !== undefined) {
@@ -109,6 +136,10 @@
     dirLight.castShadow = true;
     scene.add(dirLight);
 
+    if (!THREE.GLTFLoader) {
+      showError(wrapper, 'GLTFLoader not available.');
+      return;
+    }
     const loader = new THREE.GLTFLoader();
 
     let modelRoot = null;
@@ -130,12 +161,11 @@
       }
     }
 
-    function onProgress(evt){
-      // Could add a loading progress UI here
-    }
+    function onProgress(evt){ }
 
     function onError(error){
       console.error('[AA3D] Failed to load model', error);
+      showError(wrapper, 'Failed to load 3D model. Check the src URL.');
       if (posterEl) {
         posterEl.classList.add('aa3d-error');
       }
@@ -143,6 +173,8 @@
 
     if (src) {
       loader.load(src, onModelLoaded, onProgress, onError);
+    } else {
+      showError(wrapper, 'Missing model src attribute.');
     }
 
     function resizeRendererToDisplaySize(){
@@ -173,12 +205,9 @@
       camera.updateProjectionMatrix();
     });
 
-    // AR stub: only show button if XR supported (implementation of AR session not included here)
     if (arButton && navigator.xr && navigator.xr.isSessionSupported) {
       navigator.xr.isSessionSupported('immersive-ar').then(function(supported){
-        if (supported) {
-          arButton.hidden = false;
-        }
+        if (supported) { arButton.hidden = false; }
       }).catch(function(){});
     }
 

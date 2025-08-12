@@ -23,7 +23,7 @@ class AA3D_Plugin {
         // Register Three.js + loaders from CDN for simplicity
         wp_register_script(
             'three',
-            'https://unpkg.com/three@0.148.0/build/three.min.js',
+            'https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js',
             [],
             '0.148.0',
             true
@@ -31,7 +31,7 @@ class AA3D_Plugin {
 
         wp_register_script(
             'three-gltfloader',
-            'https://unpkg.com/three@0.148.0/examples/js/loaders/GLTFLoader.js',
+            'https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/GLTFLoader.js',
             [ 'three' ],
             '0.148.0',
             true
@@ -39,7 +39,7 @@ class AA3D_Plugin {
 
         wp_register_script(
             'three-orbitcontrols',
-            'https://unpkg.com/three@0.148.0/examples/js/controls/OrbitControls.js',
+            'https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/controls/OrbitControls.js',
             [ 'three' ],
             '0.148.0',
             true
