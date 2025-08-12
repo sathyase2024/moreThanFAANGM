@@ -57,6 +57,7 @@ class AA3D_Plugin {
 
     public function register_shortcodes() {
         add_shortcode( 'aa3d', [ $this, 'render_viewer_shortcode' ] );
+        add_shortcode( 'aa3d_designer', [ $this, 'render_designer_shortcode' ] );
     }
 
     /**
@@ -113,6 +114,34 @@ class AA3D_Plugin {
             $html .= '<img class="aa3d-poster" src="' . esc_url( $atts['poster'] ) . '" alt="" />';
         }
         $html .= '<button class="aa3d-ar-button" hidden>View in AR</button>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * Shortcode: [aa3d_designer src="https://designer.example.com" height="720" title="3D Designer" allow="xr-spatial-tracking; fullscreen" loading="lazy"]
+     */
+    public function render_designer_shortcode( $atts ) {
+        $atts = shortcode_atts( [
+            'src' => '',
+            'height' => '720',
+            'title' => '3D Designer',
+            'allow' => 'accelerometer; magnetometer; gyroscope; xr-spatial-tracking; fullscreen',
+            'loading' => 'lazy',
+        ], $atts, 'aa3d_designer' );
+
+        if ( empty( $atts['src'] ) ) {
+            return '<em>AA 3D Designer: missing src attribute.</em>';
+        }
+
+        wp_enqueue_style( 'aa3d-style' );
+
+        $height = preg_replace('/[^0-9]/', '', $atts['height']);
+        $height_style = $height ? ' style="height:'. esc_attr( $height ) .'px"' : '';
+
+        $html  = '<div class="aa3d-designer-wrapper"'. $height_style .'>';
+        $html .= '<iframe class="aa3d-designer-iframe" src="'. esc_url( $atts['src'] ) .'" title="'. esc_attr( $atts['title'] ) .'" allow="'. esc_attr( $atts['allow'] ) .'" loading="'. esc_attr( $atts['loading'] ) .'" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>';
         $html .= '</div>';
 
         return $html;
