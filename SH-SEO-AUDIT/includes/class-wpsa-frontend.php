@@ -98,6 +98,17 @@ class WPSA_Frontend {
 			wp_send_json_error( array( 'message' => __( 'URL must start with http or https.', 'wp-seo-audit' ) ), 400 );
 		}
 
+		// Check if outbound HTTP is blocked by WP config
+		if ( defined( 'WP_HTTP_BLOCK_EXTERNAL' ) && WP_HTTP_BLOCK_EXTERNAL ) {
+			$allowed = defined( 'WP_ACCESSIBLE_HOSTS' ) ? WP_ACCESSIBLE_HOSTS : '';
+			if ( false === stripos( (string) $allowed, 'googleapis.com' ) ) {
+				wp_send_json_error( array(
+					'message' => __( 'Server is blocking outbound HTTP requests. Please allow googleapis.com in WP_ACCESSIBLE_HOSTS.', 'wp-seo-audit' ),
+					'hint' => 'Define WP_ACCESSIBLE_HOSTS=*.googleapis.com in wp-config.php or disable WP_HTTP_BLOCK_EXTERNAL.',
+				), 503 );
+			}
+		}
+
 		$api_key = $this->plugin->get_api_key();
 		$cache_ttl = $this->plugin->get_cache_ttl();
 
@@ -121,15 +132,30 @@ class WPSA_Frontend {
 			'url' => esc_url_raw( $url ),
 		);
 
-		$sent_owner = WPSA_Mailer::send_owner_email( $this->plugin, $lead, $results, $errors );
 		$settings = $this->plugin->get_settings();
+
+		// If both strategies failed, include a more actionable message
+		if ( empty( $results ) ) {
+			$first_error = '';
+			if ( ! empty( $errors ) ) {
+				$first_error = reset( $errors );
+			}
+			$hint = '';
+			if ( empty( $api_key ) ) {
+				$hint = __( 'Tip: Add a Google PageSpeed API key in Settings → SEO Audit to avoid public quota limits.', 'wp-seo-audit' );
+			}
+			wp_send_json_error( array(
+				'message' => $first_error ? sprintf( __( 'Audit failed: %s', 'wp-seo-audit' ), $first_error ) : __( 'Audit failed. Please try again later.', 'wp-seo-audit' ),
+				'errors' => $errors,
+				'hint' => $hint,
+			), 502 );
+		}
+
+		// Send emails after having at least one result
+		$sent_owner = WPSA_Mailer::send_owner_email( $this->plugin, $lead, $results, $errors );
 		$sent_customer = false;
 		if ( ! empty( $settings['autoresponder_enabled'] ) ) {
 			$sent_customer = WPSA_Mailer::send_customer_email( $this->plugin, $lead, $results, $errors );
-		}
-
-		if ( empty( $results ) ) {
-			wp_send_json_error( array( 'message' => __( 'Audit failed. Please try again later.', 'wp-seo-audit' ), 'errors' => $errors ), 500 );
 		}
 
 		wp_send_json_success( array(
