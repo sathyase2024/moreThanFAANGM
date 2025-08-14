@@ -64,6 +64,26 @@ class WPSA_Mailer {
 	}
 
 	/**
+	 * Apply temporary from name and email filters for a single send.
+	 */
+	protected static function with_mail_from( $settings, $callback ) {
+		$from_email = ! empty( $settings['from_email'] ) ? $settings['from_email'] : get_option( 'admin_email' );
+		$from_name = ! empty( $settings['from_name'] ) ? $settings['from_name'] : wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
+
+		$filter_from = function() use ( $from_email ) { return $from_email; };
+		$filter_from_name = function() use ( $from_name ) { return $from_name; };
+
+		add_filter( 'wp_mail_from', $filter_from );
+		add_filter( 'wp_mail_from_name', $filter_from_name );
+		try {
+			return call_user_func( $callback );
+		} finally {
+			remove_filter( 'wp_mail_from', $filter_from );
+			remove_filter( 'wp_mail_from_name', $filter_from_name );
+		}
+	}
+
+	/**
 	 * Send owner/internal email with lead details and audit report.
 	 *
 	 * @param WPSA_Plugin $plugin
@@ -75,13 +95,10 @@ class WPSA_Mailer {
 	public static function send_owner_email( $plugin, array $lead, array $results, array $errors ) {
 		$settings = $plugin->get_settings();
 		$to = ! empty( $settings['recipient_email'] ) ? $settings['recipient_email'] : get_option( 'admin_email' );
-		$from = ! empty( $settings['from_email'] ) ? $settings['from_email'] : get_option( 'admin_email' );
 
 		$subject = 'New SEO Audit - ' . ( $lead['company'] ?? '' ) . ' (' . ( $lead['url'] ?? '' ) . ')';
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-		if ( ! empty( $from ) ) {
-			$headers[] = 'From: ' . $from;
-		}
+		$headers[] = 'List-Unsubscribe: <mailto:' . sanitize_email( $to ) . '>'; // helps deliverability in some providers
 		if ( ! empty( $lead['email'] ) && is_email( $lead['email'] ) ) {
 			$headers[] = 'Reply-To: ' . $lead['email'];
 		}
@@ -94,7 +111,9 @@ class WPSA_Mailer {
 		$body .= self::build_results_html( $lead['url'] ?? '', $results, $errors );
 		$body .= '</div>';
 
-		return (bool) wp_mail( $to, $subject, $body, $headers );
+		return (bool) self::with_mail_from( $settings, function() use ( $to, $subject, $body, $headers ) {
+			return wp_mail( $to, $subject, $body, $headers );
+		} );
 	}
 
 	/**
@@ -112,13 +131,10 @@ class WPSA_Mailer {
 		}
 		$settings = $plugin->get_settings();
 		$to = $lead['email'];
-		$from = ! empty( $settings['from_email'] ) ? $settings['from_email'] : get_option( 'admin_email' );
 
 		$subject = 'Your SEO Audit Report for ' . ( $lead['url'] ?? '' );
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-		if ( ! empty( $from ) ) {
-			$headers[] = 'From: ' . $from;
-		}
+		$headers[] = 'List-Unsubscribe: <mailto:' . sanitize_email( $to ) . '>';
 
 		$body  = '<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">';
 		$body .= '<p>Hi ' . esc_html( $lead['company'] ?? '' ) . ',</p>';
@@ -128,7 +144,9 @@ class WPSA_Mailer {
 		$body .= '<p>— Digital Cruz</p>';
 		$body .= '</div>';
 
-		return (bool) wp_mail( $to, $subject, $body, $headers );
+		return (bool) self::with_mail_from( $settings, function() use ( $to, $subject, $body, $headers ) {
+			return wp_mail( $to, $subject, $body, $headers );
+		} );
 	}
 
 	/**

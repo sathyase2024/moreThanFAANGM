@@ -93,6 +93,14 @@ class WPSA_Admin {
 		);
 
 		add_settings_field(
+			'wpsa_from_name',
+			__( 'From Name', 'wp-seo-audit' ),
+			array( $this, 'render_from_name_field' ),
+			'wpsa-settings',
+			'wpsa_email_section'
+		);
+
+		add_settings_field(
 			'wpsa_autoresponder_enabled',
 			__( 'Send Auto-reply to Customer', 'wp-seo-audit' ),
 			array( $this, 'render_autoresponder_field' ),
@@ -117,8 +125,10 @@ class WPSA_Admin {
 
 		$recipient_email = isset( $input['recipient_email'] ) ? sanitize_email( $input['recipient_email'] ) : '';
 		$from_email = isset( $input['from_email'] ) ? sanitize_email( $input['from_email'] ) : '';
+		$from_name = isset( $input['from_name'] ) ? sanitize_text_field( $input['from_name'] ) : '';
 		$sanitized['recipient_email'] = is_email( $recipient_email ) ? $recipient_email : get_option( 'admin_email' );
 		$sanitized['from_email'] = is_email( $from_email ) ? $from_email : 'hello@digitalcruz.com';
+		$sanitized['from_name'] = $from_name ? $from_name : wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
 		$sanitized['autoresponder_enabled'] = empty( $input['autoresponder_enabled'] ) ? 0 : 1;
 
 		return $sanitized;
@@ -162,6 +172,16 @@ class WPSA_Admin {
 	public function render_from_email_field() {
 		$options = $this->plugin->get_settings();
 		echo '<input type="email" class="regular-text" name="wpsa_settings[from_email]" value="' . esc_attr( $options['from_email'] ) . '" placeholder="hello@digitalcruz.com" />';
+	}
+
+	/**
+	 * Render from name input.
+	 *
+	 * @return void
+	 */
+	public function render_from_name_field() {
+		$options = $this->plugin->get_settings();
+		echo '<input type="text" class="regular-text" name="wpsa_settings[from_name]" value="' . esc_attr( $options['from_name'] ) . '" placeholder="' . esc_attr( get_bloginfo( 'name' ) ) . '" />';
 	}
 
 	/**
