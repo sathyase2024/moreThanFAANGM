@@ -45,15 +45,39 @@
 		container.html(html).prop('hidden', false);
 	}
 
+	function isValidEmail(email){
+		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+	}
+
+	function isValidPhone(phone){
+		return (phone.replace(/\D/g,'').length >= 7);
+	}
+
 	$(document).on('submit', '#wpsa-form', function(e){
 		e.preventDefault();
 		var $form = $(this);
+		var company = $.trim($form.find('#wpsa_company').val());
+		var email = $.trim($form.find('#wpsa_email').val());
+		var phone = $.trim($form.find('#wpsa_phone').val());
 		var url = $.trim($form.find('#wpsa_url').val());
 		var $message = $('.wpsa-message');
 		var $results = $('.wpsa-results');
 
 		$results.prop('hidden', true).empty();
 		$message.removeClass('error').text('');
+
+		if(company.length < 2){
+			$message.addClass('error').text(wpsa_ajax.i18n.invalidCompany);
+			return;
+		}
+		if(!isValidEmail(email)){
+			$message.addClass('error').text(wpsa_ajax.i18n.invalidEmail);
+			return;
+		}
+		if(!isValidPhone(phone)){
+			$message.addClass('error').text(wpsa_ajax.i18n.invalidPhone);
+			return;
+		}
 
 		try {
 			var u = new URL(url);
@@ -72,12 +96,17 @@
 			data: {
 				action: 'run_wpsa_audit',
 				nonce: wpsa_ajax.nonce,
+				company: company,
+				email: email,
+				phone: phone,
 				url: url
 			}
 		}).done(function(resp){
 			if(resp && resp.success){
 				renderResults($results, resp.data);
-				$message.text('');
+				var note = '';
+				if(resp.data.email_customer_sent){ note = wpsa_ajax.i18n.sent; }
+				$message.text(note);
 			}else{
 				$message.addClass('error').text((resp && resp.data && resp.data.message) ? resp.data.message : 'Audit failed');
 			}

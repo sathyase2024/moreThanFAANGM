@@ -61,6 +61,9 @@ class WPSA_Plugin {
 		$defaults = array(
 			'api_key' => '',
 			'cache_ttl' => 1800,
+			'recipient_email' => 'hello@digitalcruz.com',
+			'from_email' => 'hello@digitalcruz.com',
+			'autoresponder_enabled' => 1,
 		);
 		return wp_parse_args( $settings, $defaults );
 	}

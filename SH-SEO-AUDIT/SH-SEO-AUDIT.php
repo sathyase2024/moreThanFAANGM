@@ -20,6 +20,7 @@ require_once WPSA_PLUGIN_DIR . 'includes/class-wpsa-plugin.php';
 require_once WPSA_PLUGIN_DIR . 'includes/class-wpsa-pagespeed.php';
 require_once WPSA_PLUGIN_DIR . 'includes/class-wpsa-admin.php';
 require_once WPSA_PLUGIN_DIR . 'includes/class-wpsa-frontend.php';
+require_once WPSA_PLUGIN_DIR . 'includes/class-wpsa-mailer.php';
 
 function wpsa_bootstrap() {
 	$plugin = new WPSA_Plugin();
@@ -29,6 +30,12 @@ add_action( 'plugins_loaded', 'wpsa_bootstrap' );
 
 register_activation_hook( __FILE__, function() {
 	if ( ! get_option( 'wpsa_settings' ) ) {
-		add_option( 'wpsa_settings', array( 'api_key' => '' ) );
+		add_option( 'wpsa_settings', array(
+			'api_key' => '',
+			'cache_ttl' => 1800,
+			'recipient_email' => 'hello@digitalcruz.com',
+			'from_email' => 'hello@digitalcruz.com',
+			'autoresponder_enabled' => 1,
+		) );
 	}
 } );

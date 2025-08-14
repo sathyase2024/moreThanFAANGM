@@ -66,6 +66,39 @@ class WPSA_Admin {
 			'wpsa-settings',
 			'wpsa_main_section'
 		);
+
+		add_settings_section(
+			'wpsa_email_section',
+			__( 'Email Settings', 'wp-seo-audit' ),
+			function() {
+				echo '<p>' . esc_html__( 'Configure where audit reports are sent and the From address.', 'wp-seo-audit' ) . '</p>';
+			},
+			'wpsa-settings'
+		);
+
+		add_settings_field(
+			'wpsa_recipient_email',
+			__( 'Recipient Email (admin)', 'wp-seo-audit' ),
+			array( $this, 'render_recipient_email_field' ),
+			'wpsa-settings',
+			'wpsa_email_section'
+		);
+
+		add_settings_field(
+			'wpsa_from_email',
+			__( 'From Email (website)', 'wp-seo-audit' ),
+			array( $this, 'render_from_email_field' ),
+			'wpsa-settings',
+			'wpsa_email_section'
+		);
+
+		add_settings_field(
+			'wpsa_autoresponder_enabled',
+			__( 'Send Auto-reply to Customer', 'wp-seo-audit' ),
+			array( $this, 'render_autoresponder_field' ),
+			'wpsa-settings',
+			'wpsa_email_section'
+		);
 	}
 
 	/**
@@ -81,6 +114,13 @@ class WPSA_Admin {
 		if ( $sanitized['cache_ttl'] < 60 ) {
 			$sanitized['cache_ttl'] = 60;
 		}
+
+		$recipient_email = isset( $input['recipient_email'] ) ? sanitize_email( $input['recipient_email'] ) : '';
+		$from_email = isset( $input['from_email'] ) ? sanitize_email( $input['from_email'] ) : '';
+		$sanitized['recipient_email'] = is_email( $recipient_email ) ? $recipient_email : get_option( 'admin_email' );
+		$sanitized['from_email'] = is_email( $from_email ) ? $from_email : 'hello@digitalcruz.com';
+		$sanitized['autoresponder_enabled'] = empty( $input['autoresponder_enabled'] ) ? 0 : 1;
+
 		return $sanitized;
 	}
 
@@ -102,6 +142,37 @@ class WPSA_Admin {
 	public function render_cache_ttl_field() {
 		$options = $this->plugin->get_settings();
 		echo '<input type="number" class="small-text" min="60" step="60" name="wpsa_settings[cache_ttl]" value="' . esc_attr( (string) $options['cache_ttl'] ) . '" />';
+	}
+
+	/**
+	 * Render recipient email input.
+	 *
+	 * @return void
+	 */
+	public function render_recipient_email_field() {
+		$options = $this->plugin->get_settings();
+		echo '<input type="email" class="regular-text" name="wpsa_settings[recipient_email]" value="' . esc_attr( $options['recipient_email'] ) . '" placeholder="hello@digitalcruz.com" />';
+	}
+
+	/**
+	 * Render from email input.
+	 *
+	 * @return void
+	 */
+	public function render_from_email_field() {
+		$options = $this->plugin->get_settings();
+		echo '<input type="email" class="regular-text" name="wpsa_settings[from_email]" value="' . esc_attr( $options['from_email'] ) . '" placeholder="hello@digitalcruz.com" />';
+	}
+
+	/**
+	 * Render autoresponder checkbox.
+	 *
+	 * @return void
+	 */
+	public function render_autoresponder_field() {
+		$options = $this->plugin->get_settings();
+		$checked = ! empty( $options['autoresponder_enabled'] ) ? 'checked' : '';
+		echo '<label><input type="checkbox" name="wpsa_settings[autoresponder_enabled]" value="1" ' . $checked . ' /> ' . esc_html__( 'Yes, send a copy to the customer automatically', 'wp-seo-audit' ) . '</label>';
 	}
 
 	/**
