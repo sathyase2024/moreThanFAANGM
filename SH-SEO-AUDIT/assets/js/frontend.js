@@ -8,10 +8,10 @@
 		var html = '';
 		if(!data || !data.results) return;
 		html += '<div class="wpsa-summary">';
-		html += '<h3>Results for ' + $('<div/>').text(data.url).html() + '</h3>';
+		html += '<h3>Results for ' + $('<div/>').text(data.url || (data.lead && data.lead.url) || '').html() + '</h3>';
 		['mobile','desktop'].forEach(function(strategy){
-			if(!data.results[strategy]) return;
-			var r = data.results[strategy];
+			var r = (data.results && data.results[strategy]) || (data.partial && data.partial[strategy]);
+			if(!r) return;
 			html += '<div class="wpsa-card">';
 			html += '<h4>' + strategy.charAt(0).toUpperCase() + strategy.slice(1) + '</h4>';
 			html += '<div class="wpsa-grid">';
@@ -45,8 +45,24 @@
 		container.html(html).prop('hidden', false);
 	}
 
-	function isValidEmail(email){
-		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+	function setProgress(step, percent){
+		var $p = $('.wpsa-progress');
+		$p.prop('hidden', false);
+		$p.find('.wpsa-progress-fill').css('width', percent + '%');
+		$p.find('.wpsa-progress-steps li').each(function(){
+			var s = $(this).data('step');
+			$(this).toggleClass('active', s === step);
+			if(percent >= 100 && s === 'email') $(this).addClass('done');
+		});
+	}
+
+	function runStep(step, payload){
+		return $.ajax({
+			url: wpsa_ajax.ajax_url,
+			type: 'POST',
+			dataType: 'json',
+			data: $.extend({}, payload, { action: 'run_wpsa_audit_step', nonce: wpsa_ajax.nonce, step: step })
+		});
 	}
 
 	$(document).on('submit', '#wpsa-form', function(e){
@@ -58,14 +74,11 @@
 		var url = $.trim($form.find('#wpsa_url').val());
 		var $message = $('.wpsa-message');
 		var $results = $('.wpsa-results');
+		var payload = { company: company, email: email, phone: phone, url: url };
 
 		$results.prop('hidden', true).empty();
 		$message.removeClass('error').text('');
 
-		if(!isValidEmail(email)){
-			$message.addClass('error').text(wpsa_ajax.i18n.invalidEmail);
-			return;
-		}
 		try {
 			var u = new URL(url);
 			if(!/^https?:$/.test(u.protocol)) throw new Error('bad');
@@ -74,35 +87,38 @@
 			return;
 		}
 
-		$message.text(wpsa_ajax.i18n.running);
+		setProgress('mobile', 5);
+		$message.text(wpsa_ajax.i18n.progress.mobile);
 
-		$.ajax({
-			url: wpsa_ajax.ajax_url,
-			type: 'POST',
-			dataType: 'json',
-			data: {
-				action: 'run_wpsa_audit',
-				nonce: wpsa_ajax.nonce,
-				company: company,
-				email: email,
-				phone: phone,
-				url: url
-			}
-		}).done(function(resp){
-			if(resp && resp.success){
+		runStep('mobile', payload)
+			.done(function(resp){
+				if(!(resp && resp.success)) throw resp;
+				setProgress('desktop', 40);
+				$message.text(wpsa_ajax.i18n.progress.desktop);
 				renderResults($results, resp.data);
-				var note = '';
-				if(resp.data.email_customer_sent){ note = wpsa_ajax.i18n.sent; }
-				$message.text(note);
-			}else{
-				$message.addClass('error').text((resp && resp.data && resp.data.message) ? resp.data.message : 'Audit failed');
-			}
-		}).fail(function(xhr){
-			var msg = 'Audit failed';
-			if(xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message){
-				msg = xhr.responseJSON.data.message;
-			}
-			$message.addClass('error').text(msg);
-		});
+				payload.job_id = resp.data.job_id;
+				return runStep('desktop', payload);
+			})
+			.done(function(resp){
+				if(!(resp && resp.success)) throw resp;
+				setProgress('email', 75);
+				$message.text(wpsa_ajax.i18n.progress.email);
+				renderResults($results, resp.data);
+				payload.job_id = resp.data.job_id;
+				return runStep('email', payload);
+			})
+			.done(function(resp){
+				if(!(resp && resp.success)) throw resp;
+				setProgress('email', 100);
+				$message.text(wpsa_ajax.i18n.progress.done + (resp.data.email_customer_sent ? ' — ' + wpsa_ajax.i18n.sent : ''));
+				renderResults($results, resp.data);
+			})
+			.fail(function(xhr){
+				var msg = 'Audit failed';
+				if(xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message){
+					msg = xhr.responseJSON.data.message;
+				}
+				$message.addClass('error').text(msg);
+			});
 	});
 })(jQuery);
