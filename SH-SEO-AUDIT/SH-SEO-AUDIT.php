@@ -3,7 +3,7 @@
  * Plugin Name: SEO Audit by PageSpeed Insights
  * Description: Run free SEO and performance audits for any URL via Google PageSpeed Insights. Provides a shortcode [seo_audit] and a settings page to configure the API key.
  * Version: 0.1.0
- * Author: Your Name
+ * Author: nagarajarao
  * Text Domain: wp-seo-audit
  */
 
