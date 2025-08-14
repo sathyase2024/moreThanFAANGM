@@ -49,10 +49,6 @@
 		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 	}
 
-	function isValidPhone(phone){
-		return (phone.replace(/\D/g,'').length >= 7);
-	}
-
 	$(document).on('submit', '#wpsa-form', function(e){
 		e.preventDefault();
 		var $form = $(this);
@@ -66,19 +62,10 @@
 		$results.prop('hidden', true).empty();
 		$message.removeClass('error').text('');
 
-		if(company.length < 2){
-			$message.addClass('error').text(wpsa_ajax.i18n.invalidCompany);
-			return;
-		}
 		if(!isValidEmail(email)){
 			$message.addClass('error').text(wpsa_ajax.i18n.invalidEmail);
 			return;
 		}
-		if(!isValidPhone(phone)){
-			$message.addClass('error').text(wpsa_ajax.i18n.invalidPhone);
-			return;
-		}
-
 		try {
 			var u = new URL(url);
 			if(!/^https?:$/.test(u.protocol)) throw new Error('bad');

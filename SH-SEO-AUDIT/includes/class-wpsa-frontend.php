@@ -48,7 +48,7 @@ class WPSA_Frontend {
 			<form id="wpsa-form" class="wpsa-form" novalidate>
 				<div class="wpsa-field">
 					<label for="wpsa_company"><?php esc_html_e( 'Company Name', 'wp-seo-audit' ); ?></label>
-					<input type="text" id="wpsa_company" name="company" class="wpsa-input" placeholder="Your Company" required />
+					<input type="text" id="wpsa_company" name="company" class="wpsa-input" placeholder="Your Company" />
 				</div>
 				<div class="wpsa-field">
 					<label for="wpsa_email"><?php esc_html_e( 'Email', 'wp-seo-audit' ); ?></label>
@@ -56,7 +56,7 @@ class WPSA_Frontend {
 				</div>
 				<div class="wpsa-field">
 					<label for="wpsa_phone"><?php esc_html_e( 'Contact Number', 'wp-seo-audit' ); ?></label>
-					<input type="tel" id="wpsa_phone" name="phone" class="wpsa-input" placeholder="+1 555 123 4567" required />
+					<input type="tel" id="wpsa_phone" name="phone" class="wpsa-input" placeholder="+1 555 123 4567" />
 				</div>
 				<div class="wpsa-field">
 					<label for="wpsa_url"><?php esc_html_e( 'Website URL', 'wp-seo-audit' ); ?></label>
@@ -85,14 +85,9 @@ class WPSA_Frontend {
 		$url = isset( $_POST['url'] ) ? (string) wp_unslash( $_POST['url'] ) : '';
 		$url = trim( $url );
 
-		if ( empty( $company ) ) {
-			wp_send_json_error( array( 'message' => __( 'Please enter your company name.', 'wp-seo-audit' ) ), 400 );
-		}
+		// Only email and URL are required
 		if ( empty( $email ) || ! is_email( $email ) ) {
 			wp_send_json_error( array( 'message' => __( 'Please enter a valid email address.', 'wp-seo-audit' ) ), 400 );
-		}
-		if ( empty( $phone ) ) {
-			wp_send_json_error( array( 'message' => __( 'Please enter a valid contact number.', 'wp-seo-audit' ) ), 400 );
 		}
 		if ( empty( $url ) || ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid URL.', 'wp-seo-audit' ) ), 400 );
