@@ -41,12 +41,10 @@ class WPSA_Frontend {
 				'invalidCompany' => __( 'Please enter your company name.', 'wp-seo-audit' ),
 				'invalidEmail' => __( 'Please enter a valid email address.', 'wp-seo-audit' ),
 				'invalidPhone' => __( 'Please enter a valid contact number.', 'wp-seo-audit' ),
-				'sent' => __( 'Report emailed. Check your inbox.', 'wp-seo-audit' ),
 				'progress' => array(
 					'init' => __( 'Starting…', 'wp-seo-audit' ),
 					'mobile' => __( 'Running mobile audit…', 'wp-seo-audit' ),
 					'desktop' => __( 'Running desktop audit…', 'wp-seo-audit' ),
-					'email' => __( 'Sending emails…', 'wp-seo-audit' ),
 					'done' => __( 'Completed', 'wp-seo-audit' ),
 				),
 			)
@@ -62,7 +60,7 @@ class WPSA_Frontend {
 				</div>
 				<div class="wpsa-field">
 					<label for="wpsa_email"><?php esc_html_e( 'Email', 'wp-seo-audit' ); ?></label>
-					<input type="email" id="wpsa_email" name="email" class="wpsa-input" placeholder="you@example.com" required />
+					<input type="email" id="wpsa_email" name="email" class="wpsa-input" placeholder="you@example.com" />
 				</div>
 				<div class="wpsa-field">
 					<label for="wpsa_phone"><?php esc_html_e( 'Contact Number', 'wp-seo-audit' ); ?></label>
@@ -79,7 +77,6 @@ class WPSA_Frontend {
 				<ul class="wpsa-progress-steps">
 					<li data-step="mobile"><?php esc_html_e( 'Mobile', 'wp-seo-audit' ); ?></li>
 					<li data-step="desktop"><?php esc_html_e( 'Desktop', 'wp-seo-audit' ); ?></li>
-					<li data-step="email"><?php esc_html_e( 'Email', 'wp-seo-audit' ); ?></li>
 				</ul>
 			</div>
 			<div class="wpsa-message" aria-live="polite"></div>
@@ -90,7 +87,7 @@ class WPSA_Frontend {
 	}
 
 	/**
-	 * AJAX handler to run the audit and send emails.
+	 * AJAX handler to run the audit and show results only (no email).
 	 *
 	 * @return void
 	 */
@@ -103,10 +100,6 @@ class WPSA_Frontend {
 		$url = isset( $_POST['url'] ) ? (string) wp_unslash( $_POST['url'] ) : '';
 		$url = trim( $url );
 
-		// Only email and URL are required
-		if ( empty( $email ) || ! is_email( $email ) ) {
-			wp_send_json_error( array( 'message' => __( 'Please enter a valid email address.', 'wp-seo-audit' ) ), 400 );
-		}
 		if ( empty( $url ) || ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid URL.', 'wp-seo-audit' ) ), 400 );
 		}
@@ -150,8 +143,6 @@ class WPSA_Frontend {
 			'url' => esc_url_raw( $url ),
 		);
 
-		$settings = $this->plugin->get_settings();
-
 		// If both strategies failed, include a more actionable message
 		if ( empty( $results ) ) {
 			$first_error = '';
@@ -169,25 +160,16 @@ class WPSA_Frontend {
 			), 502 );
 		}
 
-		// Send emails after having at least one result
-		$sent_owner = WPSA_Mailer::send_owner_email( $this->plugin, $lead, $results, $errors );
-		$sent_customer = false;
-		if ( ! empty( $settings['autoresponder_enabled'] ) ) {
-			$sent_customer = WPSA_Mailer::send_customer_email( $this->plugin, $lead, $results, $errors );
-		}
-
 		wp_send_json_success( array(
 			'url' => esc_url_raw( $url ),
 			'lead' => $lead,
 			'results' => $results,
 			'errors' => $errors,
-			'email_owner_sent' => (bool) $sent_owner,
-			'email_customer_sent' => (bool) $sent_customer,
 		) );
 	}
 
 	/**
-	 * Step-based audit to improve perceived performance.
+	 * Step-based audit to improve perceived performance (no email step).
 	 */
 	public function ajax_run_audit_step() {
 		check_ajax_referer( 'wpsa_run_audit', 'nonce' );
@@ -196,7 +178,7 @@ class WPSA_Frontend {
 		$job_id = isset( $_POST['job_id'] ) ? sanitize_text_field( wp_unslash( $_POST['job_id'] ) ) : '';
 		$cache_ttl = $this->plugin->get_cache_ttl();
 
-		if ( ! in_array( $step, array( 'mobile', 'desktop', 'email' ), true ) ) {
+		if ( ! in_array( $step, array( 'mobile', 'desktop' ), true ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid step.', 'wp-seo-audit' ) ), 400 );
 		}
 
@@ -214,9 +196,6 @@ class WPSA_Frontend {
 			$company = isset( $_POST['company'] ) ? sanitize_text_field( wp_unslash( $_POST['company'] ) ) : '';
 			$phone = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
 
-			if ( empty( $email ) || ! is_email( $email ) ) {
-				wp_send_json_error( array( 'message' => __( 'Please enter a valid email address.', 'wp-seo-audit' ) ), 400 );
-			}
 			if ( empty( $url ) || ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
 				wp_send_json_error( array( 'message' => __( 'Invalid URL.', 'wp-seo-audit' ) ), 400 );
 			}
@@ -252,37 +231,13 @@ class WPSA_Frontend {
 			}
 			set_transient( $job_key, $job, max( 600, (int) $cache_ttl ) );
 
-			$progress = ( 'mobile' === $step ) ? 33 : 66;
+			$progress = ( 'mobile' === $step ) ? 50 : 100;
 			wp_send_json_success( array(
 				'job_id' => $job_id,
 				'progress' => $progress,
 				'step' => $step,
 				'partial' => $job['results'],
 				'errors' => $job['errors'],
-			) );
-		}
-
-		if ( 'email' === $step ) {
-			if ( empty( $job['results'] ) ) {
-				wp_send_json_error( array( 'message' => __( 'Nothing to email. Run the audit first.', 'wp-seo-audit' ) ), 400 );
-			}
-			$sent_owner = WPSA_Mailer::send_owner_email( $this->plugin, $job['lead'], $job['results'], $job['errors'] );
-			$settings = $this->plugin->get_settings();
-			$sent_customer = false;
-			if ( ! empty( $settings['autoresponder_enabled'] ) ) {
-				$sent_customer = WPSA_Mailer::send_customer_email( $this->plugin, $job['lead'], $job['results'], $job['errors'] );
-			}
-			// Extend job TTL briefly after email
-			set_transient( $job_key, $job, max( 600, (int) $cache_ttl ) );
-			wp_send_json_success( array(
-				'job_id' => $job_id,
-				'progress' => 100,
-				'lead' => $job['lead'],
-				'results' => $job['results'],
-				'errors' => $job['errors'],
-				'email_owner_sent' => (bool) $sent_owner,
-				'email_customer_sent' => (bool) $sent_customer,
-				'step' => 'email',
 			) );
 		}
 	}

@@ -52,7 +52,7 @@
 		$p.find('.wpsa-progress-steps li').each(function(){
 			var s = $(this).data('step');
 			$(this).toggleClass('active', s === step);
-			if(percent >= 100 && s === 'email') $(this).addClass('done');
+			if(percent >= 100 && s === 'desktop') $(this).addClass('done');
 		});
 	}
 
@@ -93,7 +93,7 @@
 		runStep('mobile', payload)
 			.done(function(resp){
 				if(!(resp && resp.success)) throw resp;
-				setProgress('desktop', 40);
+				setProgress('desktop', 60);
 				$message.text(wpsa_ajax.i18n.progress.desktop);
 				renderResults($results, resp.data);
 				payload.job_id = resp.data.job_id;
@@ -101,16 +101,8 @@
 			})
 			.done(function(resp){
 				if(!(resp && resp.success)) throw resp;
-				setProgress('email', 75);
-				$message.text(wpsa_ajax.i18n.progress.email);
-				renderResults($results, resp.data);
-				payload.job_id = resp.data.job_id;
-				return runStep('email', payload);
-			})
-			.done(function(resp){
-				if(!(resp && resp.success)) throw resp;
-				setProgress('email', 100);
-				$message.text(wpsa_ajax.i18n.progress.done + (resp.data.email_customer_sent ? ' — ' + wpsa_ajax.i18n.sent : ''));
+				setProgress('desktop', 100);
+				$message.text(wpsa_ajax.i18n.progress.done);
 				renderResults($results, resp.data);
 			})
 			.fail(function(xhr){
