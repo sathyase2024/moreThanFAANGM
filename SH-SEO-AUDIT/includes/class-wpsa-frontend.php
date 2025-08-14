@@ -70,6 +70,7 @@ class WPSA_Frontend {
 					<label for="wpsa_url"><?php esc_html_e( 'Website URL', 'wp-seo-audit' ); ?></label>
 					<input type="url" id="wpsa_url" name="url" class="wpsa-input" placeholder="https://example.com" required />
 				</div>
+				<label style="display:flex;align-items:center;gap:6px;margin:4px 0 8px"><input type="checkbox" id="wpsa_nocache" /> <span><?php esc_html_e( 'Refresh results (ignore cache)', 'wp-seo-audit' ); ?></span></label>
 				<button type="submit" class="wpsa-button"><?php esc_html_e( 'Run Audit', 'wp-seo-audit' ); ?></button>
 			</form>
 			<div class="wpsa-progress" aria-live="polite" hidden>
@@ -176,6 +177,7 @@ class WPSA_Frontend {
 
 		$step = isset( $_POST['step'] ) ? sanitize_key( wp_unslash( $_POST['step'] ) ) : '';
 		$job_id = isset( $_POST['job_id'] ) ? sanitize_text_field( wp_unslash( $_POST['job_id'] ) ) : '';
+		$bypass_cache = ! empty( $_POST['bypass_cache'] );
 		$cache_ttl = $this->plugin->get_cache_ttl();
 
 		if ( ! in_array( $step, array( 'mobile', 'desktop' ), true ) ) {
@@ -223,7 +225,7 @@ class WPSA_Frontend {
 		$api_key = $this->plugin->get_api_key();
 
 		if ( 'mobile' === $step || 'desktop' === $step ) {
-			$response = WPSA_PageSpeed::run_audit( $job['lead']['url'], $step, $api_key, $cache_ttl );
+			$response = WPSA_PageSpeed::run_audit( $job['lead']['url'], $step, $api_key, $cache_ttl, (bool) $bypass_cache );
 			if ( is_wp_error( $response ) ) {
 				$job['errors'][ $step ] = $response->get_error_message();
 			} else {

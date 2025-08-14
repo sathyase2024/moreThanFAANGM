@@ -11,16 +11,19 @@ class WPSA_PageSpeed {
 	 * @param string $strategy 'mobile' or 'desktop'
 	 * @param string $api_key
 	 * @param int    $cache_ttl
+	 * @param bool   $bypass_cache If true, skip transient read and force a fresh request
 	 * @return array|WP_Error
 	 */
-	public static function run_audit( $url, $strategy = 'mobile', $api_key = '', $cache_ttl = 1800 ) {
+	public static function run_audit( $url, $strategy = 'mobile', $api_key = '', $cache_ttl = 1800, $bypass_cache = false ) {
 		$url = esc_url_raw( $url );
 		$strategy = in_array( $strategy, array( 'mobile', 'desktop' ), true ) ? $strategy : 'mobile';
 
 		$transient_key = 'wpsa_' . md5( implode( '|', array( $url, $strategy, (string) $api_key ) ) );
-		$cached = get_transient( $transient_key );
-		if ( is_array( $cached ) ) {
-			return $cached;
+		if ( ! $bypass_cache ) {
+			$cached = get_transient( $transient_key );
+			if ( is_array( $cached ) ) {
+				return $cached;
+			}
 		}
 
 		$endpoint = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';

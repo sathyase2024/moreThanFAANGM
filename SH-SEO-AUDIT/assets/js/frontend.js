@@ -72,9 +72,11 @@
 		var email = $.trim($form.find('#wpsa_email').val());
 		var phone = $.trim($form.find('#wpsa_phone').val());
 		var url = $.trim($form.find('#wpsa_url').val());
+		var nocache = $form.find('#wpsa_nocache').is(':checked');
 		var $message = $('.wpsa-message');
 		var $results = $('.wpsa-results');
 		var payload = { company: company, email: email, phone: phone, url: url };
+		if(nocache){ payload.bypass_cache = 1; }
 
 		$results.prop('hidden', true).empty();
 		$message.removeClass('error').text('');
