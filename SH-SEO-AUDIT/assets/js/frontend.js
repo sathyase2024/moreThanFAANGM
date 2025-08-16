@@ -73,10 +73,12 @@
 		var email = $.trim($form.find('#wpsa_email').val());
 		var phone = $.trim($form.find('#wpsa_phone').val());
 		var url = $.trim($form.find('#wpsa_url').val());
+		var strategy = $form.find('#wpsa_strategy').val() || 'both';
+		var categories = $form.find('#wpsa_categories').val() || 'full';
 		var nocache = $form.find('#wpsa_nocache').is(':checked');
 		var $message = $('.wpsa-message');
 		var $results = $('.wpsa-results');
-		var payload = { company: company, email: email, phone: phone, url: url };
+		var payload = { company: company, email: email, phone: phone, url: url, strategy: strategy, categories: categories };
 		if(nocache){ payload.bypass_cache = 1; }
 
 		$results.prop('hidden', true).empty();
@@ -90,21 +92,35 @@
 			return;
 		}
 
-		setProgress('mobile', 5);
-		$message.text(wpsa_ajax.i18n.progress.mobile);
+		var steps = [];
+		if(strategy === 'both' || strategy === 'mobile'){ steps.push('mobile'); }
+		if(strategy === 'both' || strategy === 'desktop'){ steps.push('desktop'); }
 
-		runStep('mobile', payload)
+		if(steps.length === 0){
+			$message.addClass('error').text('Invalid strategy');
+			return;
+		}
+
+		setProgress(steps[0], 5);
+		$message.text(wpsa_ajax.i18n.progress[steps[0]] || wpsa_ajax.i18n.progress.mobile);
+
+		runStep(steps[0], payload)
 			.done(function(resp){
 				if(!(resp && resp.success)) throw resp;
-				setProgress('desktop', 60);
-				$message.text(wpsa_ajax.i18n.progress.desktop);
 				renderResults($results, resp.data);
 				payload.job_id = resp.data.job_id;
-				return runStep('desktop', payload);
+				if(steps.length === 1){
+					setProgress(steps[0], 100);
+					$message.text(wpsa_ajax.i18n.progress.done);
+					return;
+				}
+				setProgress(steps[1], 60);
+				$message.text(wpsa_ajax.i18n.progress[steps[1]] || wpsa_ajax.i18n.progress.desktop);
+				return runStep(steps[1], payload);
 			})
 			.done(function(resp){
-				if(!(resp && resp.success)) throw resp;
-				setProgress('desktop', 100);
+				if(!(resp && resp.success)) return;
+				setProgress(steps[1], 100);
 				$message.text(wpsa_ajax.i18n.progress.done);
 				renderResults($results, resp.data);
 			})

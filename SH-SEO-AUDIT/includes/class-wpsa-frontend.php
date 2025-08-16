@@ -70,6 +70,21 @@ class WPSA_Frontend {
 					<label for="wpsa_url"><?php esc_html_e( 'Website URL', 'wp-seo-audit' ); ?></label>
 					<input type="url" id="wpsa_url" name="url" class="wpsa-input" placeholder="https://example.com" required />
 				</div>
+				<div class="wpsa-field">
+					<label for="wpsa_strategy"><?php esc_html_e( 'Strategy', 'wp-seo-audit' ); ?></label>
+					<select id="wpsa_strategy" name="strategy" class="wpsa-input">
+						<option value="both"><?php esc_html_e( 'Mobile + Desktop', 'wp-seo-audit' ); ?></option>
+						<option value="mobile"><?php esc_html_e( 'Mobile only', 'wp-seo-audit' ); ?></option>
+						<option value="desktop"><?php esc_html_e( 'Desktop only', 'wp-seo-audit' ); ?></option>
+					</select>
+				</div>
+				<div class="wpsa-field">
+					<label for="wpsa_categories"><?php esc_html_e( 'Categories', 'wp-seo-audit' ); ?></label>
+					<select id="wpsa_categories" name="categories" class="wpsa-input">
+						<option value="full"><?php esc_html_e( 'Full (Performance, SEO, Accessibility, Best Practices)', 'wp-seo-audit' ); ?></option>
+						<option value="performance"><?php esc_html_e( 'Performance only', 'wp-seo-audit' ); ?></option>
+					</select>
+				</div>
 				<label style="display:flex;align-items:center;gap:6px;margin:4px 0 8px"><input type="checkbox" id="wpsa_nocache" /> <span><?php esc_html_e( 'Refresh results (ignore cache)', 'wp-seo-audit' ); ?></span></label>
 				<button type="submit" class="wpsa-button"><?php esc_html_e( 'Run Audit', 'wp-seo-audit' ); ?></button>
 			</form>
@@ -197,6 +212,8 @@ class WPSA_Frontend {
 			$url = isset( $_POST['url'] ) ? (string) wp_unslash( $_POST['url'] ) : '';
 			$company = isset( $_POST['company'] ) ? sanitize_text_field( wp_unslash( $_POST['company'] ) ) : '';
 			$phone = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
+			$strategy = isset( $_POST['strategy'] ) ? sanitize_text_field( wp_unslash( $_POST['strategy'] ) ) : 'both';
+			$categories_select = isset( $_POST['categories'] ) ? sanitize_text_field( wp_unslash( $_POST['categories'] ) ) : 'full';
 
 			if ( empty( $url ) || ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
 				wp_send_json_error( array( 'message' => __( 'Invalid URL.', 'wp-seo-audit' ) ), 400 );
@@ -217,6 +234,10 @@ class WPSA_Frontend {
 					'phone' => $phone,
 					'url' => esc_url_raw( $url ),
 				),
+				'flow' => array(
+					'strategy' => in_array( $strategy, array( 'mobile', 'desktop', 'both' ), true ) ? $strategy : 'both',
+					'categories' => ( 'performance' === $categories_select ) ? array( 'performance' ) : array( 'performance', 'seo', 'accessibility', 'best-practices' ),
+				),
 				'results' => array(),
 				'errors' => array(),
 			);
@@ -224,15 +245,9 @@ class WPSA_Frontend {
 
 		$api_key = $this->plugin->get_api_key();
 
-		if ( 'mobile' === $step || 'desktop' === $step ) {
-			$response = WPSA_PageSpeed::run_audit( $job['lead']['url'], $step, $api_key, $cache_ttl, (bool) $bypass_cache );
-			if ( is_wp_error( $response ) ) {
-				$job['errors'][ $step ] = $response->get_error_message();
-			} else {
-				$job['results'][ $step ] = $response;
-			}
-			set_transient( $job_key, $job, max( 600, (int) $cache_ttl ) );
-
+		$should_run = ( 'both' === ( $job['flow']['strategy'] ?? 'both' ) ) || ( $step === ( $job['flow']['strategy'] ?? 'both' ) );
+		if ( ! $should_run ) {
+			// Skip step not requested, return previous state
 			$progress = ( 'mobile' === $step ) ? 50 : 100;
 			wp_send_json_success( array(
 				'job_id' => $job_id,
@@ -242,5 +257,22 @@ class WPSA_Frontend {
 				'errors' => $job['errors'],
 			) );
 		}
+
+		$response = WPSA_PageSpeed::run_audit( $job['lead']['url'], $step, $api_key, $cache_ttl, (bool) $bypass_cache, (array) ( $job['flow']['categories'] ?? null ) );
+		if ( is_wp_error( $response ) ) {
+			$job['errors'][ $step ] = $response->get_error_message();
+		} else {
+			$job['results'][ $step ] = $response;
+		}
+		set_transient( $job_key, $job, max( 600, (int) $cache_ttl ) );
+
+		$progress = ( 'mobile' === $step ) ? ( ( 'both' === ( $job['flow']['strategy'] ?? 'both' ) || 'desktop' === ( $job['flow']['strategy'] ?? 'both' ) ) ? 50 : 100 ) : 100;
+		wp_send_json_success( array(
+			'job_id' => $job_id,
+			'progress' => $progress,
+			'step' => $step,
+			'partial' => $job['results'],
+			'errors' => $job['errors'],
+		) );
 	}
 }
