@@ -1,0 +1,18 @@
+/* Floating widget */
+.wp-chatgpt-floating{position:fixed;z-index:99999;width:320px;max-width:90vw;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.15);border-radius:12px;overflow:hidden;bottom:20px;}
+.wp-chatgpt-floating.bottom-right{right:20px;}
+.wp-chatgpt-floating.bottom-left{left:20px;}
+.wp-chatgpt-header{color:#fff;padding:10px 12px;font-weight:600}
+.wp-chatgpt-body{display:flex;flex-direction:column;height:420px}
+.wp-chatgpt-messages{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#fafafa}
+.wp-chatgpt-message{padding:8px 10px;border-radius:10px;max-width:85%;white-space:pre-wrap;word-break:break-word}
+.wp-chatgpt-message.user{align-self:flex-end;background:#e0e7ff}
+.wp-chatgpt-message.assistant{align-self:flex-start;background:#f1f5f9}
+.wp-chatgpt-input-row{display:flex;gap:8px;padding:10px;border-top:1px solid #e5e7eb}
+.wp-chatgpt-input-row textarea{flex:1;resize:vertical;min-height:40px;max-height:160px;padding:8px;border:1px solid #e5e7eb;border-radius:8px}
+.wp-chatgpt-input-row button{background:#4f46e5;color:#fff;border:none;border-radius:8px;padding:8px 12px;cursor:pointer}
+.wp-chatgpt-input-row button:disabled{opacity:.7;cursor:not-allowed}
+
+/* Embed */
+.wp-chatgpt-embed{width:100%;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+.wp-chatgpt-embed-inner{display:flex;flex-direction:column;height:100%}
