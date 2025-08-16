@@ -7,18 +7,19 @@ class WPSA_PageSpeed {
 	/**
 	 * Run a PageSpeed audit for a URL and strategy.
 	 *
-	 * @param string $url
-	 * @param string $strategy 'mobile' or 'desktop'
-	 * @param string $api_key
-	 * @param int    $cache_ttl
-	 * @param bool   $bypass_cache If true, skip transient read and force a fresh request
+	 * @param string   $url
+	 * @param string   $strategy 'mobile' or 'desktop'
+	 * @param string   $api_key
+	 * @param int      $cache_ttl
+	 * @param bool     $bypass_cache If true, skip transient read and force a fresh request
+	 * @param string[] $categories   Optional list of categories to request (e.g., array('performance'))
 	 * @return array|WP_Error
 	 */
-	public static function run_audit( $url, $strategy = 'mobile', $api_key = '', $cache_ttl = 1800, $bypass_cache = false ) {
+	public static function run_audit( $url, $strategy = 'mobile', $api_key = '', $cache_ttl = 1800, $bypass_cache = false, $categories = null ) {
 		$url = esc_url_raw( $url );
 		$strategy = in_array( $strategy, array( 'mobile', 'desktop' ), true ) ? $strategy : 'mobile';
 
-		$transient_key = 'wpsa_' . md5( implode( '|', array( $url, $strategy, (string) $api_key ) ) );
+		$transient_key = 'wpsa_' . md5( implode( '|', array( $url, $strategy, (string) $api_key, is_array( $categories ) ? implode( ',', $categories ) : '' ) ) );
 		if ( ! $bypass_cache ) {
 			$cached = get_transient( $transient_key );
 			if ( is_array( $cached ) ) {
@@ -37,8 +38,10 @@ class WPSA_PageSpeed {
 		}
 
 		$request_url = add_query_arg( $query_args, $endpoint );
-		// Append categories as repeated query params to ensure PSI returns all desired categories
-		$requested_categories = array( 'performance', 'seo', 'accessibility', 'best-practices' );
+		// Append categories as repeated query params
+		$requested_categories = is_array( $categories ) && ! empty( $categories )
+			? array_values( $categories )
+			: array( 'performance', 'seo', 'accessibility', 'best-practices' );
 		foreach ( $requested_categories as $cat ) {
 			$request_url .= '&category=' . rawurlencode( $cat );
 		}
