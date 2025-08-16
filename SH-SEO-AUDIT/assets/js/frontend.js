@@ -6,7 +6,8 @@
 
 	function renderResults(container, data){
 		var html = '';
-		if(!data || !data.results) return;
+		var resultsData = (data && (data.results || data.partial)) || {};
+		if(!resultsData.mobile && !resultsData.desktop) return;
 		html += '<div class="wpsa-summary">';
 		html += '<h3>Results for ' + $('<div/>').text(data.url || (data.lead && data.lead.url) || '').html() + '</h3>';
 		['mobile','desktop'].forEach(function(strategy){
