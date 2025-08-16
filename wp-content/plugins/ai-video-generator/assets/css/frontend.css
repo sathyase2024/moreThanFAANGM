@@ -1,0 +1,11 @@
+/* AI Video Generator frontend styles */
+.aivid-container { border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #fff; }
+.aivid-form { display: grid; gap: 12px; }
+.aivid-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.aivid-form textarea { width: 100%; padding: 8px; }
+.aivid-form select, .aivid-form button { padding: 8px; }
+.aivid-status { margin-top: 8px; color: #334155; }
+.aivid-progress { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+.aivid-progress-bar { height: 100%; background: #3b82f6; width: 0%; transition: width .3s ease; }
+.aivid-result { margin-top: 12px; }
+.aivid-result video { max-width: 100%; border-radius: 8px; }
