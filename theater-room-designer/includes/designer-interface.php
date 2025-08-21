@@ -236,8 +236,12 @@ $settings = get_option('trd_settings', array(
                 <!-- View Mode Tabs -->
                 <div class="trd-view-tabs">
                     <button class="trd-tab-btn active" data-view="3d">
-                        <span class="trd-icon">🎭</span>
-                        <?php _e('3D View', 'theater-room-designer'); ?>
+                        <span class="trd-icon">🏗️</span>
+                        <?php _e('Room Layout', 'theater-room-designer'); ?>
+                    </button>
+                    <button class="trd-tab-btn" data-view="viewer">
+                        <span class="trd-icon">👁️</span>
+                        <?php _e('Customer View', 'theater-room-designer'); ?>
                     </button>
                     <button class="trd-tab-btn" data-view="top">
                         <span class="trd-icon">⬛</span>

@@ -371,6 +371,29 @@
     color: #721c24;
 }
 
+.trd-recommendation.immersion {
+    border-left-color: #28a745;
+    background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+    border: 2px solid #28a745;
+    font-weight: 600;
+}
+
+.trd-recommendation.immersion .trd-recommendation-type {
+    color: #155724;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.trd-recommendation.experience {
+    border-left-color: #6f42c1;
+    background: linear-gradient(135deg, #faf9ff 0%, #f0ebff 100%);
+}
+
+.trd-recommendation.experience .trd-recommendation-type {
+    color: #4c2c85;
+    font-weight: 600;
+}
+
 /* Equipment List */
 .trd-equipment-list {
     font-size: 14px;

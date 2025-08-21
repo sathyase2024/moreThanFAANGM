@@ -417,45 +417,109 @@
         const screenWidth = screenSize * 0.87 * 0.1; // Convert to scene units
         const screenHeight = screenWidth * 9/16; // 16:9 aspect ratio
         
-        let screenGeometry, screenMaterial;
+        // Create screen group for realistic appearance
+        const screenGroup = new THREE.Group();
         
         if (currentDesign.screen.type === 'projector') {
-            // Projector screen (white)
-            screenGeometry = new THREE.PlaneGeometry(screenWidth, screenHeight);
-            screenMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            // Projector screen with frame
+            const screenGeometry = new THREE.PlaneGeometry(screenWidth, screenHeight);
+            
+            // Screen surface with movie content simulation
+            const screenMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x1a1a2e, // Dark blue for movie scene
+                emissive: 0x0f0f1a, // Slight glow
+                transparent: true,
+                opacity: 0.95
+            });
+            
+            const screenSurface = new THREE.Mesh(screenGeometry, screenMaterial);
+            screenGroup.add(screenSurface);
+            
+            // Add screen frame
+            const frameThickness = 0.1;
+            const frameGeometry = new THREE.BoxGeometry(screenWidth + 0.4, screenHeight + 0.4, frameThickness);
+            const frameMaterial = new THREE.MeshLambertMaterial({ color: 0x2a2a2a });
+            const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+            frame.position.z = -frameThickness/2;
+            screenGroup.add(frame);
+            
         } else {
-            // TV/Display (black bezel with screen)
-            screenGeometry = new THREE.BoxGeometry(screenWidth * 1.1, screenHeight * 1.1, 0.2);
-            screenMaterial = new THREE.MeshLambertMaterial({ color: 0x111111 });
+            // TV/Display with realistic bezel and screen
+            const bezelThickness = 0.3;
+            const bezelSize = 0.2;
+            
+            // TV bezel (black frame)
+            const bezelGeometry = new THREE.BoxGeometry(
+                screenWidth + bezelSize, 
+                screenHeight + bezelSize, 
+                bezelThickness
+            );
+            const bezelMaterial = new THREE.MeshLambertMaterial({ color: 0x0a0a0a });
+            const bezel = new THREE.Mesh(bezelGeometry, bezelMaterial);
+            screenGroup.add(bezel);
+            
+            // TV screen surface with movie content
+            const screenGeometry = new THREE.PlaneGeometry(screenWidth, screenHeight);
+            const screenMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x1a1a2e, // Movie scene color
+                emissive: 0x0f0f1a, // Screen glow
+                transparent: true,
+                opacity: 0.9
+            });
+            const screenSurface = new THREE.Mesh(screenGeometry, screenMaterial);
+            screenSurface.position.z = bezelThickness/2 + 0.01;
+            screenGroup.add(screenSurface);
+            
+            // Add subtle screen reflection
+            const reflectionGeometry = new THREE.PlaneGeometry(screenWidth * 0.8, screenHeight * 0.3);
+            const reflectionMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.1
+            });
+            const reflection = new THREE.Mesh(reflectionGeometry, reflectionMaterial);
+            reflection.position.set(-screenWidth * 0.2, screenHeight * 0.2, bezelThickness/2 + 0.02);
+            screenGroup.add(reflection);
         }
-        
-        screen = new THREE.Mesh(screenGeometry, screenMaterial);
         
         // Position screen based on wall selection
         const roomWidth = currentDesign.room.width;
         const roomLength = currentDesign.room.length;
         const roomHeight = currentDesign.room.height;
         
+        // Optimal screen height (center at eye level when seated)
+        const screenCenterHeight = 3.8; // 3.8 feet from floor (eye level when seated)
+        
         switch(currentDesign.screen.position) {
             case 'front':
-                screen.position.set(0, screenHeight/2 + 1, -roomLength/2 + 0.2);
+                screenGroup.position.set(0, screenCenterHeight, -roomLength/2 + 0.3);
                 break;
             case 'back':
-                screen.position.set(0, screenHeight/2 + 1, roomLength/2 - 0.2);
-                screen.rotation.y = Math.PI;
+                screenGroup.position.set(0, screenCenterHeight, roomLength/2 - 0.3);
+                screenGroup.rotation.y = Math.PI;
                 break;
             case 'left':
-                screen.position.set(-roomWidth/2 + 0.2, screenHeight/2 + 1, 0);
-                screen.rotation.y = Math.PI/2;
+                screenGroup.position.set(-roomWidth/2 + 0.3, screenCenterHeight, 0);
+                screenGroup.rotation.y = Math.PI/2;
                 break;
             case 'right':
-                screen.position.set(roomWidth/2 - 0.2, screenHeight/2 + 1, 0);
-                screen.rotation.y = -Math.PI/2;
+                screenGroup.position.set(roomWidth/2 - 0.3, screenCenterHeight, 0);
+                screenGroup.rotation.y = -Math.PI/2;
                 break;
         }
         
-        screen.castShadow = true;
-        scene.add(screen);
+        screenGroup.castShadow = true;
+        scene.add(screenGroup);
+        screen = screenGroup;
+        
+        // Add screen size indicator (like Audio Advice)
+        addScreenSizeIndicator(screenSize, screenGroup.position);
+    }
+    
+    function addScreenSizeIndicator(size, position) {
+        // This would add a text label showing screen size
+        // Audio Advice shows this information overlaid on the 3D view
+        // For now we'll skip the text rendering but this is where it would go
     }
     
     function updateSpeakers() {
@@ -809,50 +873,91 @@
         const recommendations = $('#trd-recommendations');
         const recs = [];
         
-        // Viewing distance recommendation
-        const screenSize = currentDesign.screen.size;
-        const optimalMin = screenSize * 0.1 * 1.5;
-        const optimalMax = screenSize * 0.1 * 2.5;
-        const roomLength = currentDesign.room.length;
+        // Calculate immersion score (like Audio Advice)
+        const immersionData = calculateImmersionScore();
         
-        if (roomLength < optimalMin) {
+        // Display immersion score prominently
+        recs.push({
+            type: 'immersion',
+            title: `Theater Experience Score: ${immersionData.score}/100`,
+            text: immersionData.description
+        });
+        
+        // Viewing distance analysis
+        if (immersionData.viewingDistance.status === 'optimal') {
+            recs.push({
+                type: 'success',
+                title: 'Viewing Distance ✓',
+                text: `Perfect! ${immersionData.viewingDistance.distance}ft provides excellent immersion for your ${currentDesign.screen.size}" screen.`
+            });
+        } else if (immersionData.viewingDistance.status === 'too_close') {
             recs.push({
                 type: 'warning',
-                title: 'Viewing Distance',
-                text: `Room may be too short for optimal viewing. Consider a smaller screen or longer room.`
-            });
-        } else if (roomLength > optimalMax * 1.5) {
-            recs.push({
-                type: 'info',
-                title: 'Viewing Distance',
-                text: `You have plenty of space. Consider a larger screen for better immersion.`
+                title: 'Viewing Distance ⚠️',
+                text: `Too close! Move seating back ${immersionData.viewingDistance.adjustment}ft for better comfort.`
             });
         } else {
             recs.push({
-                type: 'success',
+                type: 'info',
                 title: 'Viewing Distance',
-                text: `Perfect viewing distance for your screen size.`
+                text: `Good distance. You could sit ${immersionData.viewingDistance.adjustment}ft closer for more immersion.`
+            });
+        }
+        
+        // Audio immersion
+        const audioScore = immersionData.audioScore;
+        if (audioScore >= 80) {
+            recs.push({
+                type: 'success',
+                title: 'Audio Setup ✓',
+                text: `Excellent ${currentDesign.speakers.config} configuration will provide immersive surround sound.`
+            });
+        } else if (audioScore >= 60) {
+            recs.push({
+                type: 'info',
+                title: 'Audio Setup',
+                text: `Good audio setup. Consider upgrading to 7.1 or adding Atmos for better immersion.`
+            });
+        } else {
+            recs.push({
+                type: 'warning',
+                title: 'Audio Setup',
+                text: `Basic audio. Upgrade to 5.1 or 7.1 surround sound for true theater experience.`
             });
         }
         
         // Room acoustics
         const roomVolume = currentDesign.room.width * currentDesign.room.length * currentDesign.room.height;
-        if (roomVolume < 800) {
+        if (roomVolume < 1000) {
             recs.push({
                 type: 'info',
-                title: 'Acoustics',
-                text: `Small room - consider acoustic treatment to reduce reflections.`
+                title: 'Room Acoustics',
+                text: `Cozy space! Add acoustic panels and carpet to reduce reflections and improve sound quality.`
+            });
+        } else if (roomVolume > 3000) {
+            recs.push({
+                type: 'info',
+                title: 'Room Acoustics',
+                text: `Large room provides excellent bass response. Consider additional subwoofers for even coverage.`
             });
         }
         
-        // Speaker placement
-        if (currentDesign.speakers.config === '5.1' || currentDesign.speakers.config === '7.1') {
+        // Seating comfort
+        const totalSeats = currentDesign.seating.rows * currentDesign.seating.seatsPerRow;
+        if (currentDesign.seating.type === 'recliner' && totalSeats <= 8) {
             recs.push({
-                type: 'info',
-                title: 'Speaker Placement',
-                text: `Ensure rear speakers are positioned behind the seating area for proper surround effect.`
+                type: 'success',
+                title: 'Seating Comfort ✓',
+                text: `Perfect! Theater recliners provide the ultimate viewing experience for ${totalSeats} people.`
             });
         }
+        
+        // Experience prediction
+        recs.push({
+            type: 'experience',
+            title: '🎬 Your Theater Experience',
+            text: generateExperienceDescription(immersionData)
+        });
         
         let html = '';
         recs.forEach(rec => {
@@ -865,6 +970,104 @@
         });
         
         recommendations.html(html);
+    }
+    
+    function calculateImmersionScore() {
+        const screenSize = currentDesign.screen.size;
+        const screenWidthFeet = (screenSize * 0.87) / 12;
+        const roomLength = currentDesign.room.length;
+        
+        // Calculate actual viewing distance from front row
+        let actualDistance = roomLength * 0.4; // Approximate front row distance
+        
+        // Optimal distance calculation
+        const optimalMin = screenWidthFeet * 1.5;
+        const optimalMax = screenWidthFeet * 2.5;
+        const optimalDistance = (optimalMin + optimalMax) / 2;
+        
+        // Distance score (0-40 points)
+        let distanceScore = 0;
+        let distanceStatus = 'optimal';
+        let distanceAdjustment = 0;
+        
+        if (actualDistance >= optimalMin && actualDistance <= optimalMax) {
+            distanceScore = 40;
+            distanceStatus = 'optimal';
+        } else if (actualDistance < optimalMin) {
+            distanceScore = Math.max(20, 40 - (optimalMin - actualDistance) * 5);
+            distanceStatus = 'too_close';
+            distanceAdjustment = Math.round((optimalMin - actualDistance) * 10) / 10;
+        } else {
+            distanceScore = Math.max(25, 40 - (actualDistance - optimalMax) * 3);
+            distanceStatus = 'too_far';
+            distanceAdjustment = Math.round((actualDistance - optimalDistance) * 10) / 10;
+        }
+        
+        // Audio score (0-30 points)
+        const audioConfigs = {
+            '2.1': 15,
+            '5.1': 25,
+            '7.1': 28,
+            '9.1': 30
+        };
+        const audioScore = audioConfigs[currentDesign.speakers.config] || 10;
+        
+        // Room score (0-20 points)
+        const roomVolume = currentDesign.room.width * currentDesign.room.length * currentDesign.room.height;
+        let roomScore = 15;
+        if (roomVolume < 800) roomScore = 10;
+        if (roomVolume > 2000) roomScore = 20;
+        
+        // Seating score (0-10 points)
+        let seatingScore = 5;
+        if (currentDesign.seating.type === 'recliner') seatingScore = 10;
+        if (currentDesign.seating.type === 'sofa') seatingScore = 7;
+        
+        const totalScore = Math.round(distanceScore + audioScore + roomScore + seatingScore);
+        
+        let description = '';
+        if (totalScore >= 90) {
+            description = 'Outstanding! This setup will deliver a truly cinematic experience that rivals commercial theaters.';
+        } else if (totalScore >= 75) {
+            description = 'Excellent setup! You\'ll enjoy immersive movie nights with great picture and sound quality.';
+        } else if (totalScore >= 60) {
+            description = 'Good theater setup. A few improvements could make it even better.';
+        } else {
+            description = 'Basic setup. Consider the recommendations below to enhance your theater experience.';
+        }
+        
+        return {
+            score: totalScore,
+            description: description,
+            viewingDistance: {
+                status: distanceStatus,
+                distance: Math.round(actualDistance * 10) / 10,
+                adjustment: distanceAdjustment
+            },
+            audioScore: audioScore,
+            roomScore: roomScore,
+            seatingScore: seatingScore
+        };
+    }
+    
+    function generateExperienceDescription(data) {
+        const screenSize = currentDesign.screen.size;
+        const audioConfig = currentDesign.speakers.config;
+        const totalSeats = currentDesign.seating.rows * currentDesign.seating.seatsPerRow;
+        
+        let experience = `With your ${screenSize}" ${currentDesign.screen.type} and ${audioConfig} surround sound, `;
+        
+        if (data.score >= 85) {
+            experience += `movie nights will feel like premium cinema experiences. Action scenes will be thrilling, dialogue crystal clear, and you'll feel immersed in every scene.`;
+        } else if (data.score >= 70) {
+            experience += `you'll enjoy excellent movie nights with great picture quality and immersive sound that brings films to life.`;
+        } else if (data.score >= 55) {
+            experience += `you'll have enjoyable movie nights with good picture and sound quality for entertainment with family and friends.`;
+        } else {
+            experience += `you'll have a basic viewing setup. Consider the recommendations above to create a more immersive experience.`;
+        }
+        
+        return experience;
     }
     
     function updateEquipmentList() {
@@ -1142,20 +1345,62 @@
         
         switch(view) {
             case '3d':
-                camera.position.set(20, 15, 20);
+                // Overview angle - shows whole theater layout
+                camera.position.set(15, 12, 15);
                 camera.lookAt(0, 0, 0);
                 break;
             case 'top':
-                camera.position.set(0, room.height + 10, 0);
+                // Top-down view for layout planning
+                camera.position.set(0, room.height + 8, 0);
                 camera.lookAt(0, 0, 0);
                 break;
             case 'side':
-                camera.position.set(room.width + 10, room.height/2, 0);
+                // Side view to see seating elevation and screen height
+                camera.position.set(room.width + 8, room.height/2, 0);
                 camera.lookAt(0, room.height/2, 0);
+                break;
+            case 'viewer':
+                // CUSTOMER EXPERIENCE VIEW - from the best seat
+                positionCameraAsViewer();
                 break;
         }
         
         controls.update();
+    }
+    
+    // NEW: Customer experience view - see what they'll actually see
+    function positionCameraAsViewer() {
+        // Find the center seat in the front row (best viewing position)
+        if (seats.length > 0) {
+            const frontRowSeats = seats.filter(seat => seat.position.z === Math.min(...seats.map(s => s.position.z)));
+            const centerSeat = frontRowSeats[Math.floor(frontRowSeats.length / 2)];
+            
+            if (centerSeat) {
+                // Position camera at eye level of person sitting in center front seat
+                const viewerHeight = 3.8; // Eye level when seated (3.8 feet)
+                camera.position.set(
+                    centerSeat.position.x,
+                    viewerHeight,
+                    centerSeat.position.z
+                );
+                
+                // Look directly at the center of the screen
+                if (screen) {
+                    camera.lookAt(screen.position.x, screen.position.y, screen.position.z);
+                } else {
+                    // Look toward front of room if no screen
+                    camera.lookAt(0, viewerHeight, -currentDesign.room.length/2);
+                }
+                
+                // Disable controls in viewer mode for immersive experience
+                if (controls) {
+                    controls.enabled = false;
+                    setTimeout(() => {
+                        if (controls) controls.enabled = true;
+                    }, 3000); // Re-enable after 3 seconds
+                }
+            }
+        }
     }
     
     function showHelpModal() {
