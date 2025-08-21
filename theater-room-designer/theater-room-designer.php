@@ -48,9 +48,12 @@ class TheaterRoomDesigner {
     }
     
     public function enqueue_scripts() {
-        wp_enqueue_script('three-js', 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', array(), '128', true);
-        wp_enqueue_script('orbit-controls', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', array('three-js'), '128', true);
-        wp_enqueue_script('trd-main', TRD_PLUGIN_URL . 'assets/js/theater-designer.js', array('jquery', 'three-js'), TRD_PLUGIN_VERSION, true);
+        // Use reliable CDN for Three.js
+        wp_enqueue_script('three-js', 'https://unpkg.com/three@0.155.0/build/three.min.js', array(), '155', true);
+        wp_enqueue_script('orbit-controls', 'https://unpkg.com/three@0.155.0/examples/jsm/controls/OrbitControls.js', array('three-js'), '155', true);
+        
+        // Use simple version for now to ensure it works
+        wp_enqueue_script('trd-main', TRD_PLUGIN_URL . 'assets/js/theater-designer-simple.js', array('jquery'), TRD_PLUGIN_VERSION, true);
         wp_enqueue_style('trd-style', TRD_PLUGIN_URL . 'assets/css/theater-designer.css', array(), TRD_PLUGIN_VERSION);
         
         // Localize script for AJAX
@@ -58,6 +61,12 @@ class TheaterRoomDesigner {
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('trd_nonce')
         ));
+        
+        // Add inline script for debugging
+        wp_add_inline_script('trd-main', '
+            console.log("Theater Room Designer scripts loaded");
+            window.trdDebug = true;
+        ');
     }
     
     public function admin_enqueue_scripts($hook) {
@@ -105,7 +114,7 @@ class TheaterRoomDesigner {
         ), $atts, 'theater_room_designer');
         
         ob_start();
-        include TRD_PLUGIN_PATH . 'includes/designer-interface.php';
+        include TRD_PLUGIN_PATH . 'includes/designer-interface-simple.php';
         return ob_get_clean();
     }
     
