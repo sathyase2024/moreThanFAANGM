@@ -59,18 +59,18 @@
         const container = document.getElementById('trd-3d-container');
         if (!container) return;
         
-        // Scene
+        // Scene with Audio Advice style lighting
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1a1a1a);
+        scene.background = new THREE.Color(0xf0f0f0); // Light background like Audio Advice
         
-        // Camera - positioned for better theater room viewing
+        // Camera - Audio Advice style positioning
         const aspect = container.clientWidth / container.clientHeight;
-        camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000); // Reduced FOV for more realistic view
+        camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 1000); // Audio Advice FOV
         
-        // Position camera for realistic theater room viewing (like Audio Advice)
-        // Start with an isometric-style view that shows the whole room layout
-        camera.position.set(15, 12, 15); // Angled view showing length and width
-        camera.lookAt(0, 0, 0); // Look at center of room
+        // Position camera exactly like Audio Advice screenshots
+        // Slightly elevated, angled view showing room layout clearly
+        camera.position.set(12, 10, 12); // Audio Advice camera position
+        camera.lookAt(0, 1, 0); // Look slightly down at room
         
         // Renderer with mobile optimizations
         renderer = new THREE.WebGLRenderer({ 
@@ -135,26 +135,22 @@
     }
     
     function setupLighting() {
-        // Ambient light
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+        // Audio Advice style lighting (bright, clear)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
         
-        // Main directional light
+        // Main directional light (bright, like Audio Advice)
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(10, 20, 5);
+        directionalLight.position.set(15, 20, 10);
         directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.mapSize.width = 1024;
+        directionalLight.shadow.mapSize.height = 1024;
         scene.add(directionalLight);
         
-        // Additional fill lights
-        const fillLight1 = new THREE.DirectionalLight(0xffffff, 0.3);
-        fillLight1.position.set(-10, 10, -5);
-        scene.add(fillLight1);
-        
-        const fillLight2 = new THREE.DirectionalLight(0xffffff, 0.2);
-        fillLight2.position.set(0, 5, 10);
-        scene.add(fillLight2);
+        // Additional bright fill light
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
+        fillLight.position.set(-10, 15, -10);
+        scene.add(fillLight);
     }
     
     function animate() {
@@ -329,11 +325,10 @@
         const length = currentDesign.room.length;
         const height = currentDesign.room.height;
         
-        // Professional room materials (like Audio Advice)
+        // Audio Advice style room materials (light, realistic)
         const wallMaterial = new THREE.MeshLambertMaterial({ 
-            color: 0x3a3a3a, // Dark theater walls
-            transparent: true,
-            opacity: 0.8
+            color: 0xe8e8e8, // Light gray walls (like Audio Advice)
+            transparent: false
         });
         
         const roomGroup = new THREE.Group();
@@ -368,17 +363,16 @@
         scene.add(roomGroup);
         roomMesh = roomGroup;
         
-        // Professional theater floor
+        // Audio Advice style floor (light, realistic)
         const floorGeometry = new THREE.PlaneGeometry(width, length);
-        let floorColor = 0x2a2a2a; // Dark theater floor
+        let floorColor = 0xd4c4a8; // Light wood/laminate floor (like Audio Advice)
         
         if (currentDesign.features.carpet) {
-            floorColor = 0x4a2c2a; // Dark carpet color
+            floorColor = 0xb8a082; // Light carpet color
         }
         
         const floorMaterial = new THREE.MeshLambertMaterial({ 
-            color: floorColor,
-            roughness: 0.8
+            color: floorColor
         });
         
         floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
@@ -386,12 +380,10 @@
         floorMesh.receiveShadow = true;
         scene.add(floorMesh);
         
-        // Professional theater ceiling
+        // Audio Advice style ceiling (light)
         const ceilingGeometry = new THREE.PlaneGeometry(width, length);
         const ceilingMaterial = new THREE.MeshLambertMaterial({ 
-            color: 0x1a1a1a, // Dark theater ceiling
-            transparent: true,
-            opacity: 0.9
+            color: 0xf5f5f5 // Light ceiling
         });
         ceilingMesh = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
         ceilingMesh.rotation.x = Math.PI/2;
@@ -424,12 +416,10 @@
             // Projector screen with frame
             const screenGeometry = new THREE.PlaneGeometry(screenWidth, screenHeight);
             
-            // Screen surface with movie content simulation
+            // Screen surface (Audio Advice style - simple black screen)
             const screenMaterial = new THREE.MeshLambertMaterial({ 
-                color: 0x1a1a2e, // Dark blue for movie scene
-                emissive: 0x0f0f1a, // Slight glow
-                transparent: true,
-                opacity: 0.95
+                color: 0x1a1a1a, // Dark screen (like Audio Advice)
+                transparent: false
             });
             
             const screenSurface = new THREE.Mesh(screenGeometry, screenMaterial);
@@ -458,28 +448,14 @@
             const bezel = new THREE.Mesh(bezelGeometry, bezelMaterial);
             screenGroup.add(bezel);
             
-            // TV screen surface with movie content
+            // TV screen surface (Audio Advice style - simple dark screen)
             const screenGeometry = new THREE.PlaneGeometry(screenWidth, screenHeight);
             const screenMaterial = new THREE.MeshLambertMaterial({ 
-                color: 0x1a1a2e, // Movie scene color
-                emissive: 0x0f0f1a, // Screen glow
-                transparent: true,
-                opacity: 0.9
+                color: 0x1a1a1a // Simple dark screen (like Audio Advice)
             });
             const screenSurface = new THREE.Mesh(screenGeometry, screenMaterial);
             screenSurface.position.z = bezelThickness/2 + 0.01;
             screenGroup.add(screenSurface);
-            
-            // Add subtle screen reflection
-            const reflectionGeometry = new THREE.PlaneGeometry(screenWidth * 0.8, screenHeight * 0.3);
-            const reflectionMaterial = new THREE.MeshLambertMaterial({ 
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0.1
-            });
-            const reflection = new THREE.Mesh(reflectionGeometry, reflectionMaterial);
-            reflection.position.set(-screenWidth * 0.2, screenHeight * 0.2, bezelThickness/2 + 0.02);
-            screenGroup.add(reflection);
         }
         
         // Position screen based on wall selection
@@ -772,57 +748,77 @@
     function createSeat(type, width, depth, height) {
         const seatGroup = new THREE.Group();
         
-        // Seat materials
-        const seatMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
-        const metalMaterial = new THREE.MeshLambertMaterial({ color: 0x666666 });
+        // Audio Advice style seat materials (realistic furniture colors)
+        const seatMaterial = new THREE.MeshLambertMaterial({ color: 0x8B7355 }); // Brown leather/fabric
+        const cushionMaterial = new THREE.MeshLambertMaterial({ color: 0x9B8265 }); // Lighter cushion
+        const baseMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 }); // Darker base
         
         switch(type) {
             case 'recliner':
-                // Seat base
-                const seatGeometry = new THREE.BoxGeometry(width, height * 0.4, depth);
-                const seatBase = new THREE.Mesh(seatGeometry, seatMaterial);
-                seatBase.position.y = height * 0.2;
-                seatGroup.add(seatBase);
+                // Audio Advice style recliner (like in screenshots)
                 
-                // Backrest
-                const backGeometry = new THREE.BoxGeometry(width, height * 0.8, 0.3);
+                // Seat cushion (rounded)
+                const seatGeometry = new THREE.BoxGeometry(width * 0.9, height * 0.3, depth * 0.6);
+                const seatCushion = new THREE.Mesh(seatGeometry, cushionMaterial);
+                seatCushion.position.set(0, height * 0.25, depth * 0.1);
+                seatGroup.add(seatCushion);
+                
+                // Backrest (angled like real recliner)
+                const backGeometry = new THREE.BoxGeometry(width * 0.9, height * 0.7, 0.4);
                 const backrest = new THREE.Mesh(backGeometry, seatMaterial);
-                backrest.position.set(0, height * 0.6, -depth/2 + 0.15);
+                backrest.position.set(0, height * 0.6, -depth/2 + 0.2);
+                backrest.rotation.x = -0.1; // Slight angle
                 seatGroup.add(backrest);
                 
-                // Armrests
-                const armGeometry = new THREE.BoxGeometry(0.3, height * 0.6, depth * 0.8);
+                // Armrests (realistic shape)
+                const armGeometry = new THREE.BoxGeometry(0.4, height * 0.5, depth * 0.7);
                 const leftArm = new THREE.Mesh(armGeometry, seatMaterial);
-                leftArm.position.set(-width/2 + 0.15, height * 0.5, 0);
+                leftArm.position.set(-width/2 + 0.2, height * 0.45, 0);
                 seatGroup.add(leftArm);
                 
-                const rightArm = leftArm.clone();
-                rightArm.position.x = width/2 - 0.15;
+                const rightArm = new THREE.Mesh(armGeometry, seatMaterial);
+                rightArm.position.set(width/2 - 0.2, height * 0.45, 0);
                 seatGroup.add(rightArm);
+                
+                // Base/frame
+                const baseGeometry = new THREE.BoxGeometry(width, 0.2, depth);
+                const base = new THREE.Mesh(baseGeometry, baseMaterial);
+                base.position.y = 0.1;
+                seatGroup.add(base);
                 break;
                 
             case 'sofa':
-                // Long seat base
-                const sofaGeometry = new THREE.BoxGeometry(width, height * 0.4, depth);
-                const sofaBase = new THREE.Mesh(sofaGeometry, seatMaterial);
-                sofaBase.position.y = height * 0.2;
+                // Audio Advice style sofa
+                const sofaGeometry = new THREE.BoxGeometry(width, height * 0.35, depth * 0.8);
+                const sofaBase = new THREE.Mesh(sofaGeometry, cushionMaterial);
+                sofaBase.position.y = height * 0.25;
                 seatGroup.add(sofaBase);
                 
-                // Backrest
-                const sofaBackGeometry = new THREE.BoxGeometry(width, height * 0.6, 0.3);
+                // Sofa back
+                const sofaBackGeometry = new THREE.BoxGeometry(width, height * 0.6, 0.5);
                 const sofaBack = new THREE.Mesh(sofaBackGeometry, seatMaterial);
-                sofaBack.position.set(0, height * 0.5, -depth/2 + 0.15);
+                sofaBack.position.set(0, height * 0.5, -depth/2 + 0.25);
                 seatGroup.add(sofaBack);
+                
+                // Sofa arms
+                const sofaArmGeometry = new THREE.BoxGeometry(0.5, height * 0.4, depth * 0.6);
+                const sofaLeftArm = new THREE.Mesh(sofaArmGeometry, seatMaterial);
+                sofaLeftArm.position.set(-width/2 + 0.25, height * 0.4, 0);
+                seatGroup.add(sofaLeftArm);
+                
+                const sofaRightArm = new THREE.Mesh(sofaArmGeometry, seatMaterial);
+                sofaRightArm.position.set(width/2 - 0.25, height * 0.4, 0);
+                seatGroup.add(sofaRightArm);
                 break;
                 
             case 'chair':
-                // Simple chair
-                const chairGeometry = new THREE.BoxGeometry(width, height * 0.4, depth);
-                const chairBase = new THREE.Mesh(chairGeometry, seatMaterial);
-                chairBase.position.y = height * 0.2;
-                seatGroup.add(chairBase);
+                // Audio Advice style chair
+                const chairGeometry = new THREE.BoxGeometry(width * 0.9, height * 0.3, depth * 0.8);
+                const chairSeat = new THREE.Mesh(chairGeometry, cushionMaterial);
+                chairSeat.position.y = height * 0.25;
+                seatGroup.add(chairSeat);
                 
-                const chairBackGeometry = new THREE.BoxGeometry(width, height * 0.6, 0.3);
+                const chairBackGeometry = new THREE.BoxGeometry(width * 0.8, height * 0.6, 0.3);
                 const chairBack = new THREE.Mesh(chairBackGeometry, seatMaterial);
                 chairBack.position.set(0, height * 0.5, -depth/2 + 0.15);
                 seatGroup.add(chairBack);
