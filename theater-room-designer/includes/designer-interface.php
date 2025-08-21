@@ -71,224 +71,144 @@ $settings = get_option('trd_settings', array(
             </div>
         </div>
         
-        <!-- Main Content Area - Audio Advice Layout -->
-        <div class="trd-content trd-audio-advice-layout">
+        <!-- Audio Advice Style Layout -->
+        <div class="trd-audio-advice-layout">
             
-            <!-- Left Panel - Controls (Audio Advice Style) -->
-            <div class="trd-panel trd-panel-left trd-controls-panel" id="trd-controls-panel">
+            <!-- Left Side - Controls Panel (Audio Advice Style) -->
+            <div class="trd-left-controls">
                 
-                <!-- Room Dimensions -->
-                <div class="trd-section">
-                    <h3 class="trd-section-title">
-                        <span class="trd-icon">📐</span>
-                        <?php _e('Room Dimensions', 'theater-room-designer'); ?>
-                    </h3>
-                    <div class="trd-form-group">
-                        <label for="trd-room-width"><?php _e('Width', 'theater-room-designer'); ?> (<?php echo $settings['measurement_unit']; ?>)</label>
-                        <input type="number" id="trd-room-width" class="trd-input" value="<?php echo esc_attr($settings['default_room_width']); ?>" step="0.1" min="1" max="100">
+                <!-- Room Dimensions Section -->
+                <div class="trd-control-section">
+                    <h3><?php _e('Room Dimensions', 'theater-room-designer'); ?></h3>
+                    <div class="trd-form-row">
+                        <label><?php _e('Length', 'theater-room-designer'); ?> (ft)</label>
+                        <input type="number" id="trd-room-length" value="<?php echo esc_attr($settings['default_room_length']); ?>" step="0.5" min="8" max="40">
                     </div>
-                    <div class="trd-form-group">
-                        <label for="trd-room-length"><?php _e('Length', 'theater-room-designer'); ?> (<?php echo $settings['measurement_unit']; ?>)</label>
-                        <input type="number" id="trd-room-length" class="trd-input" value="<?php echo esc_attr($settings['default_room_length']); ?>" step="0.1" min="1" max="100">
+                    <div class="trd-form-row">
+                        <label><?php _e('Width', 'theater-room-designer'); ?> (ft)</label>
+                        <input type="number" id="trd-room-width" value="<?php echo esc_attr($settings['default_room_width']); ?>" step="0.5" min="8" max="30">
                     </div>
-                    <div class="trd-form-group">
-                        <label for="trd-room-height"><?php _e('Height', 'theater-room-designer'); ?> (<?php echo $settings['measurement_unit']; ?>)</label>
-                        <input type="number" id="trd-room-height" class="trd-input" value="<?php echo esc_attr($settings['default_room_height']); ?>" step="0.1" min="1" max="20">
+                    <div class="trd-form-row">
+                        <label><?php _e('Height', 'theater-room-designer'); ?> (ft)</label>
+                        <input type="number" id="trd-room-height" value="<?php echo esc_attr($settings['default_room_height']); ?>" step="0.5" min="7" max="12">
                     </div>
                 </div>
                 
-                <!-- Screen Configuration -->
-                <div class="trd-section">
-                    <h3 class="trd-section-title">
-                        <span class="trd-icon">📺</span>
-                        <?php _e('Screen Setup', 'theater-room-designer'); ?>
-                    </h3>
-                    <div class="trd-form-group">
-                        <label for="trd-screen-type"><?php _e('Screen Type', 'theater-room-designer'); ?></label>
-                        <select id="trd-screen-type" class="trd-select">
-                            <option value="tv"><?php _e('TV/Display', 'theater-room-designer'); ?></option>
-                            <option value="projector"><?php _e('Projector Screen', 'theater-room-designer'); ?></option>
+                <!-- Screen Configuration Section -->
+                <div class="trd-control-section">
+                    <h3><?php _e('Screen', 'theater-room-designer'); ?></h3>
+                    <div class="trd-form-row">
+                        <label><?php _e('Type', 'theater-room-designer'); ?></label>
+                        <select id="trd-screen-type">
+                            <option value="tv"><?php _e('TV', 'theater-room-designer'); ?></option>
+                            <option value="projector"><?php _e('Projector', 'theater-room-designer'); ?></option>
                         </select>
                     </div>
-                    <div class="trd-form-group">
-                        <label for="trd-screen-size"><?php _e('Screen Size', 'theater-room-designer'); ?> (inches)</label>
-                        <input type="number" id="trd-screen-size" class="trd-input" value="<?php echo esc_attr($settings['default_screen_size']); ?>" min="32" max="150">
+                    <div class="trd-form-row">
+                        <label><?php _e('Size', 'theater-room-designer'); ?> (inches)</label>
+                        <input type="number" id="trd-screen-size" value="<?php echo esc_attr($settings['default_screen_size']); ?>" min="40" max="120" step="5">
                     </div>
-                    <div class="trd-form-group">
-                        <label for="trd-screen-position"><?php _e('Screen Position', 'theater-room-designer'); ?></label>
-                        <select id="trd-screen-position" class="trd-select">
+                    <div class="trd-form-row">
+                        <label><?php _e('Position', 'theater-room-designer'); ?></label>
+                        <select id="trd-screen-position">
                             <option value="front"><?php _e('Front Wall', 'theater-room-designer'); ?></option>
                             <option value="back"><?php _e('Back Wall', 'theater-room-designer'); ?></option>
-                            <option value="left"><?php _e('Left Wall', 'theater-room-designer'); ?></option>
-                            <option value="right"><?php _e('Right Wall', 'theater-room-designer'); ?></option>
                         </select>
                     </div>
                 </div>
                 
-                <!-- Speaker Configuration -->
-                <div class="trd-section">
-                    <h3 class="trd-section-title">
-                        <span class="trd-icon">🔊</span>
-                        <?php _e('Audio Setup', 'theater-room-designer'); ?>
-                    </h3>
-                    <div class="trd-form-group">
-                        <label for="trd-speaker-config"><?php _e('Speaker Configuration', 'theater-room-designer'); ?></label>
-                        <select id="trd-speaker-config" class="trd-select">
-                            <option value="2.1" <?php selected($settings['default_speaker_config'], '2.1'); ?>>2.1 Stereo</option>
-                            <option value="5.1" <?php selected($settings['default_speaker_config'], '5.1'); ?>>5.1 Surround</option>
-                            <option value="7.1" <?php selected($settings['default_speaker_config'], '7.1'); ?>>7.1 Surround</option>
-                            <option value="9.1" <?php selected($settings['default_speaker_config'], '9.1'); ?>>9.1 Atmos</option>
+                <!-- Seating Configuration Section -->
+                <div class="trd-control-section">
+                    <h3><?php _e('Seating', 'theater-room-designer'); ?></h3>
+                    <div class="trd-form-row">
+                        <label><?php _e('Rows', 'theater-room-designer'); ?></label>
+                        <select id="trd-seating-rows">
+                            <option value="1">1</option>
+                            <option value="2" selected>2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
                         </select>
                     </div>
-                    <div class="trd-form-group">
-                        <label>
-                            <input type="checkbox" id="trd-auto-placement" checked>
-                            <?php _e('Auto-optimize speaker placement', 'theater-room-designer'); ?>
-                        </label>
+                    <div class="trd-form-row">
+                        <label><?php _e('Seats per Row', 'theater-room-designer'); ?></label>
+                        <select id="trd-seats-per-row">
+                            <option value="2">2</option>
+                            <option value="3" selected>3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
                     </div>
-                </div>
-                
-                <!-- Seating Configuration -->
-                <div class="trd-section">
-                    <h3 class="trd-section-title">
-                        <span class="trd-icon">🪑</span>
-                        <?php _e('Seating Arrangement', 'theater-room-designer'); ?>
-                    </h3>
-                    <div class="trd-form-group">
-                        <label for="trd-seating-rows"><?php _e('Number of Rows', 'theater-room-designer'); ?></label>
-                        <input type="number" id="trd-seating-rows" class="trd-input" value="2" min="1" max="5">
-                    </div>
-                    <div class="trd-form-group">
-                        <label for="trd-seats-per-row"><?php _e('Seats per Row', 'theater-room-designer'); ?></label>
-                        <input type="number" id="trd-seats-per-row" class="trd-input" value="3" min="1" max="10">
-                    </div>
-                    <div class="trd-form-group">
-                        <label for="trd-seating-type"><?php _e('Seating Type', 'theater-room-designer'); ?></label>
-                        <select id="trd-seating-type" class="trd-select">
-                            <option value="recliner"><?php _e('Recliners', 'theater-room-designer'); ?></option>
-                            <option value="sofa"><?php _e('Sofas', 'theater-room-designer'); ?></option>
+                    <div class="trd-form-row">
+                        <label><?php _e('Type', 'theater-room-designer'); ?></label>
+                        <select id="trd-seating-type">
+                            <option value="recliner" selected><?php _e('Recliners', 'theater-room-designer'); ?></option>
+                            <option value="sofa"><?php _e('Sofa', 'theater-room-designer'); ?></option>
                             <option value="chair"><?php _e('Chairs', 'theater-room-designer'); ?></option>
                         </select>
                     </div>
                 </div>
                 
-                <!-- Additional Features -->
-                <div class="trd-section">
-                    <h3 class="trd-section-title">
-                        <span class="trd-icon">⚙️</span>
-                        <?php _e('Additional Features', 'theater-room-designer'); ?>
-                    </h3>
-                    <div class="trd-form-group">
-                        <label>
-                            <input type="checkbox" id="trd-add-bar">
-                            <?php _e('Add snack bar/counter', 'theater-room-designer'); ?>
-                        </label>
+                <!-- Audio Configuration Section -->
+                <div class="trd-control-section">
+                    <h3><?php _e('Audio', 'theater-room-designer'); ?></h3>
+                    <div class="trd-form-row">
+                        <label><?php _e('Speaker Setup', 'theater-room-designer'); ?></label>
+                        <select id="trd-speaker-config">
+                            <option value="2.1">2.1 Stereo</option>
+                            <option value="5.1" selected>5.1 Surround</option>
+                            <option value="7.1">7.1 Surround</option>
+                            <option value="9.1">9.1 Atmos</option>
+                        </select>
                     </div>
-                    <div class="trd-form-group">
+                    <div class="trd-form-row">
                         <label>
-                            <input type="checkbox" id="trd-add-lighting">
-                            <?php _e('Add ambient lighting', 'theater-room-designer'); ?>
-                        </label>
-                    </div>
-                    <div class="trd-form-group">
-                        <label>
-                            <input type="checkbox" id="trd-add-carpet">
-                            <?php _e('Add carpet/flooring', 'theater-room-designer'); ?>
+                            <input type="checkbox" id="trd-auto-placement" checked>
+                            <?php _e('Auto-optimize placement', 'theater-room-designer'); ?>
                         </label>
                     </div>
                 </div>
+                
+                <!-- Action Buttons -->
+                <div class="trd-control-section trd-action-buttons">
+                    <button id="trd-save-design" class="trd-action-btn trd-save-btn"><?php _e('Save Design', 'theater-room-designer'); ?></button>
+                    <button id="trd-load-design" class="trd-action-btn trd-load-btn"><?php _e('Load Design', 'theater-room-designer'); ?></button>
+                    <button id="trd-new-design" class="trd-action-btn trd-new-btn"><?php _e('New Design', 'theater-room-designer'); ?></button>
+                </div>
+                
             </div>
             
-            <!-- Center Panel - 3D Visualization -->
-            <div class="trd-panel trd-panel-center" id="trd-viewer-panel">
-                <div class="trd-viewport">
+            <!-- Right Side - Large 3D Visualization (Audio Advice Style) -->
+            <div class="trd-right-viewport">
+                <div class="trd-3d-header">
+                    <h3><?php _e('3D Room Visualization', 'theater-room-designer'); ?></h3>
+                    <div class="trd-view-controls">
+                        <button id="trd-reset-view" class="trd-view-btn"><?php _e('Reset View', 'theater-room-designer'); ?></button>
+                        <button id="trd-fullscreen" class="trd-view-btn"><?php _e('Fullscreen', 'theater-room-designer'); ?></button>
+                    </div>
+                </div>
+                
+                <div class="trd-3d-viewport">
                     <div id="trd-3d-container" class="trd-3d-container">
                         <!-- Three.js canvas will be inserted here -->
                     </div>
-                    <div class="trd-viewport-controls">
-                        <button id="trd-reset-view" class="trd-btn trd-btn-small">
-                            <span class="trd-icon">🔄</span>
-                            <?php _e('Reset View', 'theater-room-designer'); ?>
-                        </button>
-                        <button id="trd-fullscreen" class="trd-btn trd-btn-small">
-                            <span class="trd-icon">⛶</span>
-                            <?php _e('Fullscreen', 'theater-room-designer'); ?>
-                        </button>
+                </div>
+                
+                <!-- Bottom Info Panel -->
+                <div class="trd-bottom-info">
+                    <div class="trd-info-section">
+                        <h4><?php _e('Design Summary', 'theater-room-designer'); ?></h4>
+                        <div id="trd-design-summary" class="trd-summary-content">
+                            <!-- Summary will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="trd-info-section">
+                        <h4><?php _e('Recommendations', 'theater-room-designer'); ?></h4>
+                        <div id="trd-recommendations" class="trd-recommendations-content">
+                            <!-- Recommendations will be populated by JavaScript -->
+                        </div>
                     </div>
                 </div>
                 
-                <!-- View Mode Tabs -->
-                <div class="trd-view-tabs">
-                    <button class="trd-tab-btn active" data-view="3d">
-                        <span class="trd-icon">🏗️</span>
-                        <?php _e('Room Layout', 'theater-room-designer'); ?>
-                    </button>
-                    <button class="trd-tab-btn" data-view="viewer">
-                        <span class="trd-icon">👁️</span>
-                        <?php _e('Customer View', 'theater-room-designer'); ?>
-                    </button>
-                    <button class="trd-tab-btn" data-view="top">
-                        <span class="trd-icon">⬛</span>
-                        <?php _e('Top View', 'theater-room-designer'); ?>
-                    </button>
-                    <button class="trd-tab-btn" data-view="side">
-                        <span class="trd-icon">▭</span>
-                        <?php _e('Side View', 'theater-room-designer'); ?>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Right Panel - Information & Recommendations -->
-            <div class="trd-panel trd-panel-right" id="trd-info-panel">
-                
-                <!-- Design Summary -->
-                <div class="trd-section">
-                    <h3 class="trd-section-title">
-                        <span class="trd-icon">📊</span>
-                        <?php _e('Design Summary', 'theater-room-designer'); ?>
-                    </h3>
-                    <div id="trd-design-summary" class="trd-summary">
-                        <!-- Summary will be populated by JavaScript -->
-                    </div>
-                </div>
-                
-                <!-- Recommendations -->
-                <div class="trd-section">
-                    <h3 class="trd-section-title">
-                        <span class="trd-icon">💡</span>
-                        <?php _e('Recommendations', 'theater-room-designer'); ?>
-                    </h3>
-                    <div id="trd-recommendations" class="trd-recommendations">
-                        <!-- Recommendations will be populated by JavaScript -->
-                    </div>
-                </div>
-                
-                <!-- Equipment List -->
-                <div class="trd-section">
-                    <h3 class="trd-section-title">
-                        <span class="trd-icon">🛒</span>
-                        <?php _e('Equipment List', 'theater-room-designer'); ?>
-                    </h3>
-                    <div id="trd-equipment-list" class="trd-equipment-list">
-                        <!-- Equipment list will be populated by JavaScript -->
-                    </div>
-                </div>
-                
-                <?php if ($settings['enable_social_sharing']): ?>
-                <!-- Social Sharing -->
-                <div class="trd-section">
-                    <h3 class="trd-section-title">
-                        <span class="trd-icon">📤</span>
-                        <?php _e('Share Design', 'theater-room-designer'); ?>
-                    </h3>
-                    <div class="trd-share-buttons">
-                        <button id="trd-share-facebook" class="trd-btn trd-btn-social trd-btn-facebook">Facebook</button>
-                        <button id="trd-share-twitter" class="trd-btn trd-btn-social trd-btn-twitter">Twitter</button>
-                        <button id="trd-share-pinterest" class="trd-btn trd-btn-social trd-btn-pinterest">Pinterest</button>
-                        <button id="trd-copy-link" class="trd-btn trd-btn-social trd-btn-link"><?php _e('Copy Link', 'theater-room-designer'); ?></button>
-                    </div>
-                </div>
-                <?php endif; ?>
             </div>
         </div>
         

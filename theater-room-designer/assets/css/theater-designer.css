@@ -1,14 +1,225 @@
 /* Theater Room Designer - Main Styles */
 
-/* Container and Layout */
+/* Container and Layout - Audio Advice Style */
 .trd-container {
     position: relative;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
     overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    min-height: 600px;
+}
+
+/* Audio Advice Layout */
+.trd-audio-advice-layout {
+    display: flex;
+    height: 100%;
+    min-height: 600px;
+}
+
+/* Left Controls Panel (Audio Advice Style) */
+.trd-left-controls {
+    width: 300px;
+    background: #fafafa;
+    border-right: 1px solid #e0e0e0;
+    padding: 20px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+/* Right Viewport (Audio Advice Style) */
+.trd-right-viewport {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+}
+
+/* Control Sections */
+.trd-control-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.trd-control-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.trd-control-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Form Rows (Audio Advice Style) */
+.trd-form-row {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.trd-form-row label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #555555;
+    margin-bottom: 5px;
+}
+
+.trd-form-row input,
+.trd-form-row select {
+    padding: 8px 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    font-size: 14px;
+    background: #ffffff;
+    color: #333333;
+    transition: border-color 0.2s ease;
+}
+
+.trd-form-row input:focus,
+.trd-form-row select:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+}
+
+/* Action Buttons */
+.trd-action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.trd-action-btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.trd-save-btn {
+    background: #0073aa;
+    color: #ffffff;
+}
+
+.trd-save-btn:hover {
+    background: #005a87;
+}
+
+.trd-load-btn {
+    background: #46b450;
+    color: #ffffff;
+}
+
+.trd-load-btn:hover {
+    background: #3e9f44;
+}
+
+.trd-new-btn {
+    background: #666666;
+    color: #ffffff;
+}
+
+.trd-new-btn:hover {
+    background: #555555;
+}
+
+/* 3D Header */
+.trd-3d-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.trd-3d-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333333;
+}
+
+.trd-view-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.trd-view-btn {
+    padding: 6px 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #555555;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.trd-view-btn:hover {
+    background: #f0f0f0;
+    border-color: #0073aa;
+}
+
+/* 3D Viewport (Audio Advice Style) */
+.trd-3d-viewport {
+    flex: 1;
+    position: relative;
+    background: #f5f5f5;
+    min-height: 400px;
+}
+
+.trd-3d-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: #f5f5f5;
+}
+
+/* Bottom Info Panel */
+.trd-bottom-info {
+    display: flex;
+    background: #fafafa;
+    border-top: 1px solid #e0e0e0;
+    min-height: 120px;
+}
+
+.trd-info-section {
+    flex: 1;
+    padding: 15px 20px;
+    border-right: 1px solid #e0e0e0;
+}
+
+.trd-info-section:last-child {
+    border-right: none;
+}
+
+.trd-info-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333333;
+    text-transform: uppercase;
+}
+
+.trd-summary-content,
+.trd-recommendations-content {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #555555;
 }
 
 /* Loading Screen */
