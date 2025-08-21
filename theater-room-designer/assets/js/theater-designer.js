@@ -67,9 +67,10 @@
         const aspect = container.clientWidth / container.clientHeight;
         camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000); // Reduced FOV for more realistic view
         
-        // Position camera like a person standing in the back of the room
-        camera.position.set(0, 8, 25); // Behind seating area, elevated view
-        camera.lookAt(0, 2, 0); // Look toward front of room
+        // Position camera for realistic theater room viewing (like Audio Advice)
+        // Start with an isometric-style view that shows the whole room layout
+        camera.position.set(15, 12, 15); // Angled view showing length and width
+        camera.lookAt(0, 0, 0); // Look at center of room
         
         // Renderer with mobile optimizations
         renderer = new THREE.WebGLRenderer({ 
@@ -328,58 +329,82 @@
         const length = currentDesign.room.length;
         const height = currentDesign.room.height;
         
-        // Create room walls
-        const wallGeometry = new THREE.BoxGeometry(1, height, 0.1);
-        const wallMaterial = new THREE.MeshLambertMaterial({ color: 0xcccccc });
+        // Professional room materials (like Audio Advice)
+        const wallMaterial = new THREE.MeshLambertMaterial({ 
+            color: 0x3a3a3a, // Dark theater walls
+            transparent: true,
+            opacity: 0.8
+        });
         
         const roomGroup = new THREE.Group();
         
+        // Create room walls with proper thickness
+        const wallThickness = 0.5;
+        
         // Front wall
-        const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
-        frontWall.scale.set(width, 1, 1);
-        frontWall.position.set(0, height/2, -length/2);
+        const frontWallGeometry = new THREE.BoxGeometry(width, height, wallThickness);
+        const frontWall = new THREE.Mesh(frontWallGeometry, wallMaterial);
+        frontWall.position.set(0, height/2, -length/2 - wallThickness/2);
         roomGroup.add(frontWall);
         
         // Back wall
-        const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
-        backWall.scale.set(width, 1, 1);
-        backWall.position.set(0, height/2, length/2);
+        const backWallGeometry = new THREE.BoxGeometry(width, height, wallThickness);
+        const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
+        backWall.position.set(0, height/2, length/2 + wallThickness/2);
         roomGroup.add(backWall);
         
         // Left wall
-        const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
-        leftWall.scale.set(length, 1, 1);
-        leftWall.rotation.y = Math.PI/2;
-        leftWall.position.set(-width/2, height/2, 0);
+        const leftWallGeometry = new THREE.BoxGeometry(wallThickness, height, length + wallThickness * 2);
+        const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
+        leftWall.position.set(-width/2 - wallThickness/2, height/2, 0);
         roomGroup.add(leftWall);
         
         // Right wall
-        const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
-        rightWall.scale.set(length, 1, 1);
-        rightWall.rotation.y = Math.PI/2;
-        rightWall.position.set(width/2, height/2, 0);
+        const rightWallGeometry = new THREE.BoxGeometry(wallThickness, height, length + wallThickness * 2);
+        const rightWall = new THREE.Mesh(rightWallGeometry, wallMaterial);
+        rightWall.position.set(width/2 + wallThickness/2, height/2, 0);
         roomGroup.add(rightWall);
         
         scene.add(roomGroup);
         roomMesh = roomGroup;
         
-        // Floor
+        // Professional theater floor
         const floorGeometry = new THREE.PlaneGeometry(width, length);
+        let floorColor = 0x2a2a2a; // Dark theater floor
+        
+        if (currentDesign.features.carpet) {
+            floorColor = 0x4a2c2a; // Dark carpet color
+        }
+        
         const floorMaterial = new THREE.MeshLambertMaterial({ 
-            color: currentDesign.features.carpet ? 0x8B4513 : 0x666666 
+            color: floorColor,
+            roughness: 0.8
         });
+        
         floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
         floorMesh.rotation.x = -Math.PI/2;
         floorMesh.receiveShadow = true;
         scene.add(floorMesh);
         
-        // Ceiling
+        // Professional theater ceiling
         const ceilingGeometry = new THREE.PlaneGeometry(width, length);
-        const ceilingMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+        const ceilingMaterial = new THREE.MeshLambertMaterial({ 
+            color: 0x1a1a1a, // Dark theater ceiling
+            transparent: true,
+            opacity: 0.9
+        });
         ceilingMesh = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
         ceilingMesh.rotation.x = Math.PI/2;
         ceilingMesh.position.y = height;
         scene.add(ceilingMesh);
+        
+        // Add room dimension labels (like Audio Advice)
+        addRoomDimensionLabels(width, length, height);
+    }
+    
+    function addRoomDimensionLabels(width, length, height) {
+        // This would add text labels showing room dimensions
+        // For now, we'll skip this but Audio Advice shows dimensions on the 3D model
     }
     
     function updateScreen() {
@@ -546,31 +571,38 @@
                 break;
         }
         
-        // Audio Advice style viewing distance calculation
-        // THX and SMPTE standards: 36-40 degrees viewing angle
+        // Audio Advice professional viewing distance calculation
+        // Based on SMPTE and THX standards for home theater
         const screenDiagonalInches = screenSize;
         const screenWidthInches = screenDiagonalInches * 0.87; // 16:9 aspect ratio
         const screenWidthFeet = screenWidthInches / 12;
         
-        // Optimal viewing distances (Audio Advice standards)
+        // Professional theater viewing distances (Audio Advice methodology)
         let optimalDistanceMin, optimalDistanceMax;
         
-        // For 4K content (closer viewing)
-        optimalDistanceMin = screenWidthFeet * 1.0; // Can sit closer with 4K
-        optimalDistanceMax = screenWidthFeet * 1.6;
+        // SMPTE standard: 30-degree viewing angle (most common for home theater)
+        // THX standard: 36-degree viewing angle (more immersive)
         
-        // For 1080p content (farther viewing) - most common
-        if (screenSize < 75) {
+        if (screenSize <= 55) {
+            // Smaller screens - can sit closer
+            optimalDistanceMin = screenWidthFeet * 1.2;
+            optimalDistanceMax = screenWidthFeet * 2.0;
+        } else if (screenSize <= 75) {
+            // Medium screens - standard distances
             optimalDistanceMin = screenWidthFeet * 1.5;
             optimalDistanceMax = screenWidthFeet * 2.5;
-        } else {
-            // Larger screens need more distance
-            optimalDistanceMin = screenWidthFeet * 1.8;
+        } else if (screenSize <= 100) {
+            // Large screens - need more distance
+            optimalDistanceMin = screenWidthFeet * 2.0;
             optimalDistanceMax = screenWidthFeet * 3.0;
+        } else {
+            // Very large screens/projectors - maximum distance
+            optimalDistanceMin = screenWidthFeet * 2.5;
+            optimalDistanceMax = screenWidthFeet * 3.5;
         }
         
-        // Use optimal distance (slightly closer to min for immersion)
-        const baseDistance = optimalDistanceMin + (optimalDistanceMax - optimalDistanceMin) * 0.3;
+        // Use Audio Advice's preferred distance (closer to max for comfort)
+        const baseDistance = optimalDistanceMin + (optimalDistanceMax - optimalDistanceMin) * 0.7;
         
         // Calculate screen position and seating area
         let screenZ = 0;
