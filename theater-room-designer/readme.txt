@@ -1,5 +1,5 @@
 === Theater Room Designer ===
-Contributors: yourname
+Contributors: srihayavadhana
 Tags: theater, home-theater, room-design, 3d-visualization, audio-video
 Requires at least: 5.0
 Tested up to: 6.4
@@ -136,7 +136,7 @@ Example: `[theater_room_designer width="800px" height="500px" show_saved="false"
 
 == Support ==
 
-For support, feature requests, or bug reports, please visit our support forum or contact us directly.
+For support, feature requests, or bug reports, please visit https://www.srihayavadhana.com/support or contact Sri Hayavadhana Info-Tech directly.
 
 == Privacy Policy ==
 

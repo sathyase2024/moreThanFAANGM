@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Theater Room Designer
- * Plugin URI: https://your-site.com/theater-room-designer
+ * Plugin URI: https://www.srihayavadhana.com/theater-room-designer
  * Description: A comprehensive 3D theater room design tool similar to Audio Advice's Home Theater Designer. Allows users to design and visualize home theater setups with room dimensions, seating arrangements, and speaker configurations.
  * Version: 1.0.0
- * Author: Your Name
- * Author URI: https://your-site.com
+ * Author: Sri Hayavadhana Info-Tech
+ * Author URI: https://www.srihayavadhana.com/
  * License: GPL v2 or later
  * Text Domain: theater-room-designer
  * Domain Path: /languages
