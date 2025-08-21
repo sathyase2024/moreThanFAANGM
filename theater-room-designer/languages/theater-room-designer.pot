@@ -1,0 +1,525 @@
+# Copyright (C) 2024 Theater Room Designer
+# This file is distributed under the same license as the Theater Room Designer package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Theater Room Designer 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/theater-room-designer\n"
+"POT-Creation-Date: 2024-01-01 00:00:00+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2024-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: theater-room-designer.php:45
+msgid "Theater Room Designer"
+msgstr ""
+
+#: theater-room-designer.php:46
+msgid "Theater Designer"
+msgstr ""
+
+#: theater-room-designer.php:55
+msgid "Settings"
+msgstr ""
+
+#: includes/admin-page.php:10
+msgid "Theater Room Designer Dashboard"
+msgstr ""
+
+#: includes/admin-page.php:11
+msgid "Manage your theater room designs and view usage statistics."
+msgstr ""
+
+#: includes/admin-page.php:20
+msgid "Total Designs"
+msgstr ""
+
+#: includes/admin-page.php:29
+msgid "Active Users"
+msgstr ""
+
+#: includes/admin-page.php:38
+msgid "This Month"
+msgstr ""
+
+#: includes/admin-page.php:45
+msgid "Quick Actions"
+msgstr ""
+
+#: includes/admin-page.php:49
+msgid "Plugin Settings"
+msgstr ""
+
+#: includes/admin-page.php:53
+msgid "Export All Designs"
+msgstr ""
+
+#: includes/admin-page.php:57
+msgid "Clear Cache"
+msgstr ""
+
+#: includes/admin-page.php:63
+msgid "Recent Designs"
+msgstr ""
+
+#: includes/admin-page.php:69
+msgid "Shortcode Usage"
+msgstr ""
+
+#: includes/admin-page.php:71
+msgid "Use the following shortcode to embed the Theater Room Designer on any page or post:"
+msgstr ""
+
+#: includes/admin-page.php:74
+msgid "Shortcode Parameters:"
+msgstr ""
+
+#: includes/admin-page.php:76
+msgid "Set the width (default: 100%)"
+msgstr ""
+
+#: includes/admin-page.php:77
+msgid "Set the height (default: 600px)"
+msgstr ""
+
+#: includes/admin-page.php:78
+msgid "Show saved designs list (default: true)"
+msgstr ""
+
+#: includes/admin-page.php:79
+msgid "Allow users to save designs (default: true)"
+msgstr ""
+
+#: includes/admin-page.php:82
+msgid "Example:"
+msgstr ""
+
+#: includes/designer-interface.php:48
+msgid "Loading Theater Room Designer..."
+msgstr ""
+
+#: includes/designer-interface.php:58
+msgid "New Design"
+msgstr ""
+
+#: includes/designer-interface.php:64
+msgid "Save"
+msgstr ""
+
+#: includes/designer-interface.php:71
+msgid "Load"
+msgstr ""
+
+#: includes/designer-interface.php:76
+msgid "Export"
+msgstr ""
+
+#: includes/designer-interface.php:82
+msgid "3D View"
+msgstr ""
+
+#: includes/designer-interface.php:87
+msgid "Help"
+msgstr ""
+
+#: includes/designer-interface.php:99
+msgid "Room Dimensions"
+msgstr ""
+
+#: includes/designer-interface.php:102
+msgid "Width"
+msgstr ""
+
+#: includes/designer-interface.php:105
+msgid "Length"
+msgstr ""
+
+#: includes/designer-interface.php:108
+msgid "Height"
+msgstr ""
+
+#: includes/designer-interface.php:116
+msgid "Screen Setup"
+msgstr ""
+
+#: includes/designer-interface.php:119
+msgid "Screen Type"
+msgstr ""
+
+#: includes/designer-interface.php:121
+msgid "TV/Display"
+msgstr ""
+
+#: includes/designer-interface.php:122
+msgid "Projector Screen"
+msgstr ""
+
+#: includes/designer-interface.php:126
+msgid "Screen Size"
+msgstr ""
+
+#: includes/designer-interface.php:129
+msgid "Screen Position"
+msgstr ""
+
+#: includes/designer-interface.php:131
+msgid "Front Wall"
+msgstr ""
+
+#: includes/designer-interface.php:132
+msgid "Back Wall"
+msgstr ""
+
+#: includes/designer-interface.php:133
+msgid "Left Wall"
+msgstr ""
+
+#: includes/designer-interface.php:134
+msgid "Right Wall"
+msgstr ""
+
+#: includes/designer-interface.php:142
+msgid "Audio Setup"
+msgstr ""
+
+#: includes/designer-interface.php:145
+msgid "Speaker Configuration"
+msgstr ""
+
+#: includes/designer-interface.php:154
+msgid "Auto-optimize speaker placement"
+msgstr ""
+
+#: includes/designer-interface.php:161
+msgid "Seating Arrangement"
+msgstr ""
+
+#: includes/designer-interface.php:164
+msgid "Number of Rows"
+msgstr ""
+
+#: includes/designer-interface.php:167
+msgid "Seats per Row"
+msgstr ""
+
+#: includes/designer-interface.php:170
+msgid "Seating Type"
+msgstr ""
+
+#: includes/designer-interface.php:172
+msgid "Recliners"
+msgstr ""
+
+#: includes/designer-interface.php:173
+msgid "Sofas"
+msgstr ""
+
+#: includes/designer-interface.php:174
+msgid "Chairs"
+msgstr ""
+
+#: includes/designer-interface.php:182
+msgid "Additional Features"
+msgstr ""
+
+#: includes/designer-interface.php:186
+msgid "Add snack bar/counter"
+msgstr ""
+
+#: includes/designer-interface.php:190
+msgid "Add ambient lighting"
+msgstr ""
+
+#: includes/designer-interface.php:194
+msgid "Add carpet/flooring"
+msgstr ""
+
+#: includes/designer-interface.php:205
+msgid "Reset View"
+msgstr ""
+
+#: includes/designer-interface.php:209
+msgid "Fullscreen"
+msgstr ""
+
+#: includes/designer-interface.php:217
+msgid "Top View"
+msgstr ""
+
+#: includes/designer-interface.php:221
+msgid "Side View"
+msgstr ""
+
+#: includes/designer-interface.php:232
+msgid "Design Summary"
+msgstr ""
+
+#: includes/designer-interface.php:240
+msgid "Recommendations"
+msgstr ""
+
+#: includes/designer-interface.php:248
+msgid "Equipment List"
+msgstr ""
+
+#: includes/designer-interface.php:257
+msgid "Share Design"
+msgstr ""
+
+#: includes/designer-interface.php:263
+msgid "Copy Link"
+msgstr ""
+
+#: includes/designer-interface.php:271
+msgid "Powered by Theater Room Designer Plugin"
+msgstr ""
+
+#: includes/designer-interface.php:281
+msgid "Save Design"
+msgstr ""
+
+#: includes/designer-interface.php:287
+msgid "Design Name"
+msgstr ""
+
+#: includes/designer-interface.php:290
+msgid "Enter design name..."
+msgstr ""
+
+#: includes/designer-interface.php:293
+msgid "Description (Optional)"
+msgstr ""
+
+#: includes/designer-interface.php:294
+msgid "Add a description..."
+msgstr ""
+
+#: includes/designer-interface.php:299
+msgid "Cancel"
+msgstr ""
+
+#: includes/designer-interface.php:306
+msgid "Load Design"
+msgstr ""
+
+#: includes/designer-interface.php:317
+msgid "Close"
+msgstr ""
+
+#: includes/designer-interface.php:325
+msgid "How to Use Theater Room Designer"
+msgstr ""
+
+#: includes/designer-interface.php:331
+msgid "Getting Started"
+msgstr ""
+
+#: includes/designer-interface.php:333
+msgid "Enter your room dimensions in the left panel"
+msgstr ""
+
+#: includes/designer-interface.php:334
+msgid "Choose your screen type and size"
+msgstr ""
+
+#: includes/designer-interface.php:335
+msgid "Select your speaker configuration"
+msgstr ""
+
+#: includes/designer-interface.php:336
+msgid "Configure your seating arrangement"
+msgstr ""
+
+#: includes/designer-interface.php:337
+msgid "View your design in the 3D visualization"
+msgstr ""
+
+#: includes/designer-interface.php:340
+msgid "3D Controls"
+msgstr ""
+
+#: includes/designer-interface.php:342
+msgid "Left click and drag to rotate the view"
+msgstr ""
+
+#: includes/designer-interface.php:343
+msgid "Right click and drag to pan the view"
+msgstr ""
+
+#: includes/designer-interface.php:344
+msgid "Scroll to zoom in and out"
+msgstr ""
+
+#: includes/designer-interface.php:345
+msgid "Use the Reset View button to return to the default view"
+msgstr ""
+
+#: includes/designer-interface.php:348
+msgid "Tips for Best Results"
+msgstr ""
+
+#: includes/designer-interface.php:350
+msgid "Keep the viewing distance 1.5-2.5 times the screen width"
+msgstr ""
+
+#: includes/designer-interface.php:351
+msgid "Position speakers at ear level when seated"
+msgstr ""
+
+#: includes/designer-interface.php:352
+msgid "Leave space behind seating for speaker placement"
+msgstr ""
+
+#: includes/designer-interface.php:353
+msgid "Consider acoustic treatment for better sound quality"
+msgstr ""
+
+#: includes/designer-interface.php:359
+msgid "Got It!"
+msgstr ""
+
+#: theater-room-designer.php:163
+msgid "Failed to save design"
+msgstr ""
+
+#: theater-room-designer.php:180
+msgid "Design not found"
+msgstr ""
+
+#: includes/settings-page.php:37
+msgid "Settings saved successfully!"
+msgstr ""
+
+#: includes/settings-page.php:54
+msgid "Measurement Unit"
+msgstr ""
+
+#: includes/settings-page.php:57
+msgid "Feet"
+msgstr ""
+
+#: includes/settings-page.php:58
+msgid "Meters"
+msgstr ""
+
+#: includes/settings-page.php:60
+msgid "Choose the default measurement unit for room dimensions."
+msgstr ""
+
+#: includes/settings-page.php:66
+msgid "Default Room Width"
+msgstr ""
+
+#: includes/settings-page.php:69
+msgid "Default width when creating a new room design."
+msgstr ""
+
+#: includes/settings-page.php:75
+msgid "Default Room Length"
+msgstr ""
+
+#: includes/settings-page.php:78
+msgid "Default length when creating a new room design."
+msgstr ""
+
+#: includes/settings-page.php:84
+msgid "Default Room Height"
+msgstr ""
+
+#: includes/settings-page.php:87
+msgid "Default height when creating a new room design."
+msgstr ""
+
+#: includes/settings-page.php:93
+msgid "Default Screen Size"
+msgstr ""
+
+#: includes/settings-page.php:96
+msgid "Default screen size in inches."
+msgstr ""
+
+#: includes/settings-page.php:102
+msgid "Default Speaker Configuration"
+msgstr ""
+
+#: includes/settings-page.php:110
+msgid "Default speaker configuration for new designs."
+msgstr ""
+
+#: includes/settings-page.php:115
+msgid "Guest Features"
+msgstr ""
+
+#: includes/settings-page.php:119
+msgid "Allow guests to save designs"
+msgstr ""
+
+#: includes/settings-page.php:121
+msgid "Enable non-logged-in users to save their room designs."
+msgstr ""
+
+#: includes/settings-page.php:128
+msgid "Maximum Saved Designs"
+msgstr ""
+
+#: includes/settings-page.php:131
+msgid "Maximum number of designs a user can save (0 for unlimited)."
+msgstr ""
+
+#: includes/settings-page.php:136
+msgid "Display Options"
+msgstr ""
+
+#: includes/settings-page.php:140
+msgid "Show plugin branding"
+msgstr ""
+
+#: includes/settings-page.php:144
+msgid "Enable social sharing buttons"
+msgstr ""
+
+#: includes/settings-page.php:151
+msgid "Advanced Settings"
+msgstr ""
+
+#: includes/settings-page.php:155
+msgid "Performance"
+msgstr ""
+
+#: includes/settings-page.php:158
+msgid "Clear 3D Model Cache"
+msgstr ""
+
+#: includes/settings-page.php:160
+msgid "Clear cached 3D models to free up space and force reload."
+msgstr ""
+
+#: includes/settings-page.php:165
+msgid "Data Management"
+msgstr ""
+
+#: includes/settings-page.php:168
+msgid "Export All Data"
+msgstr ""
+
+#: includes/settings-page.php:171
+msgid "Import Data"
+msgstr ""
+
+#: includes/settings-page.php:173
+msgid "Export or import room design data for backup or migration."
+msgstr ""
+
+#: includes/settings-page.php:182
+msgid "Are you sure you want to clear the cache?"
+msgstr ""
+
+#: includes/settings-page.php:189
+msgid "Cache cleared successfully!"
+msgstr ""
+
+#: includes/settings-page.php:191
+msgid "Error clearing cache."
+msgstr ""
