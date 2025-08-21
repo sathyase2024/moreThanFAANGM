@@ -63,11 +63,13 @@
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0x1a1a1a);
         
-        // Camera
+        // Camera - positioned for better theater room viewing
         const aspect = container.clientWidth / container.clientHeight;
-        camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
-        camera.position.set(20, 15, 20);
-        camera.lookAt(0, 0, 0);
+        camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000); // Reduced FOV for more realistic view
+        
+        // Position camera like a person standing in the back of the room
+        camera.position.set(0, 8, 25); // Behind seating area, elevated view
+        camera.lookAt(0, 2, 0); // Look toward front of room
         
         // Renderer with mobile optimizations
         renderer = new THREE.WebGLRenderer({ 
@@ -521,102 +523,152 @@
         const roomWidth = currentDesign.room.width;
         const screenSize = currentDesign.screen.size;
         
-        // Seat dimensions based on type (in feet, converted to scene units)
-        let seatWidth = 2.2;
-        let seatDepth = 2.5;
+        // Realistic seat dimensions (in feet, like Audio Advice)
+        let seatWidth = 2.5;
+        let seatDepth = 2.8;
         let seatHeight = 1.2;
         
         switch(seatType) {
             case 'sofa':
-                seatWidth = 6;
+                seatWidth = 7; // Full sofa width
                 seatDepth = 3.5;
-                seatHeight = 1.1;
+                seatHeight = 1.0;
                 break;
             case 'chair':
-                seatWidth = 2;
-                seatDepth = 2.2;
+                seatWidth = 2.2;
+                seatDepth = 2.5;
                 seatHeight = 1.1;
                 break;
             case 'recliner':
-                seatWidth = 2.5;
-                seatDepth = 3.2; // Recliners need more depth for reclining
+                seatWidth = 2.8; // Theater recliner width
+                seatDepth = 3.5; // Recliners need more depth when reclined
                 seatHeight = 1.2;
                 break;
         }
         
-        // Calculate optimal viewing distance (Audio Advice style)
-        const screenDiagonal = screenSize * 0.0254; // Convert inches to meters
-        const screenWidth = screenDiagonal * 0.87; // 16:9 aspect ratio width
-        const optimalDistanceMin = screenWidth * 1.5; // Minimum viewing distance
-        const optimalDistanceMax = screenWidth * 2.5; // Maximum viewing distance
+        // Audio Advice style viewing distance calculation
+        // THX and SMPTE standards: 36-40 degrees viewing angle
+        const screenDiagonalInches = screenSize;
+        const screenWidthInches = screenDiagonalInches * 0.87; // 16:9 aspect ratio
+        const screenWidthFeet = screenWidthInches / 12;
         
-        // Use middle of optimal range, but ensure it fits in room
-        let baseDistance = (optimalDistanceMin + optimalDistanceMax) / 2;
+        // Optimal viewing distances (Audio Advice standards)
+        let optimalDistanceMin, optimalDistanceMax;
         
-        // Adjust based on screen position
+        // For 4K content (closer viewing)
+        optimalDistanceMin = screenWidthFeet * 1.0; // Can sit closer with 4K
+        optimalDistanceMax = screenWidthFeet * 1.6;
+        
+        // For 1080p content (farther viewing) - most common
+        if (screenSize < 75) {
+            optimalDistanceMin = screenWidthFeet * 1.5;
+            optimalDistanceMax = screenWidthFeet * 2.5;
+        } else {
+            // Larger screens need more distance
+            optimalDistanceMin = screenWidthFeet * 1.8;
+            optimalDistanceMax = screenWidthFeet * 3.0;
+        }
+        
+        // Use optimal distance (slightly closer to min for immersion)
+        const baseDistance = optimalDistanceMin + (optimalDistanceMax - optimalDistanceMin) * 0.3;
+        
+        // Calculate screen position and seating area
         let screenZ = 0;
+        let seatingStartZ = 0;
+        
         switch(currentDesign.screen.position) {
             case 'front':
-                screenZ = -roomLength/2;
+                screenZ = -roomLength/2 + 0.5; // Screen on front wall
+                seatingStartZ = screenZ + baseDistance; // Seats behind screen position
                 break;
             case 'back':
-                screenZ = roomLength/2;
-                baseDistance = -baseDistance; // Seats face opposite direction
+                screenZ = roomLength/2 - 0.5; // Screen on back wall
+                seatingStartZ = screenZ - baseDistance; // Seats in front of screen
                 break;
             case 'left':
-                screenZ = 0; // Will need different calculation for side walls
+                screenZ = 0; // Screen on side wall (center)
+                seatingStartZ = baseDistance/2; // Seats positioned for side viewing
                 break;
             case 'right':
                 screenZ = 0;
+                seatingStartZ = -baseDistance/2;
                 break;
         }
         
-        // Position seating in center of room, facing screen
-        const totalSeatingWidth = seatsPerRow * seatWidth + (seatsPerRow - 1) * 0.3;
-        const startX = -totalSeatingWidth / 2 + seatWidth / 2;
+        // Calculate seating layout (Audio Advice style)
+        const aisleWidth = 2.0; // 2 feet aisle between seat groups
+        const seatSpacing = 0.5; // Space between individual seats
+        const rowSpacing = 3.5; // Space between rows (includes walkway)
         
-        // Ensure seating fits in room with some margin
-        const availableLength = roomLength - Math.abs(baseDistance) - 2; // 2ft margin
-        const rowSpacing = Math.min(seatDepth + 1, availableLength / rows);
+        // Calculate total seating width with proper spacing
+        let totalSeatingWidth;
+        if (seatsPerRow <= 2) {
+            totalSeatingWidth = seatsPerRow * seatWidth + (seatsPerRow - 1) * seatSpacing;
+        } else {
+            // For more than 2 seats, create center aisle
+            const leftSeats = Math.ceil(seatsPerRow / 2);
+            const rightSeats = Math.floor(seatsPerRow / 2);
+            totalSeatingWidth = (leftSeats * seatWidth) + (rightSeats * seatWidth) + 
+                               aisleWidth + ((leftSeats - 1) * seatSpacing) + ((rightSeats - 1) * seatSpacing);
+        }
         
+        // Ensure seating fits in room width
+        if (totalSeatingWidth > roomWidth - 2) {
+            // Adjust spacing if too wide
+            const availableWidth = roomWidth - 2;
+            const scaleFactor = availableWidth / totalSeatingWidth;
+            totalSeatingWidth = availableWidth;
+        }
+        
+        // Position seats
         for (let row = 0; row < rows; row++) {
-            // Calculate Z position based on screen position
-            let zPosition;
-            if (currentDesign.screen.position === 'front') {
-                zPosition = screenZ + baseDistance + (row * rowSpacing);
-            } else if (currentDesign.screen.position === 'back') {
-                zPosition = screenZ + baseDistance - (row * rowSpacing);
-            } else {
-                // For side walls, position in center
-                zPosition = (row - rows/2) * rowSpacing;
+            // Calculate row position with proper spacing
+            const zPosition = seatingStartZ + (row * rowSpacing);
+            
+            // Check if row fits in room
+            if (Math.abs(zPosition) > roomLength/2 - seatDepth/2 - 1) {
+                continue; // Skip this row if it doesn't fit
             }
             
-            // Stepped seating height (theater style)
-            const yPosition = seatHeight / 2 + (row * 0.4);
+            // Stepped seating height (12 inches per row like real theaters)
+            const yPosition = seatHeight / 2 + (row * 1.0);
+            
+            // Position seats in this row
+            let currentX = -totalSeatingWidth / 2;
             
             for (let seat = 0; seat < seatsPerRow; seat++) {
-                const xPosition = startX + seat * (seatWidth + 0.3);
-                
-                // Ensure seat fits within room boundaries
-                if (Math.abs(xPosition) <= roomWidth/2 - seatWidth/2 - 0.5 &&
-                    Math.abs(zPosition) <= roomLength/2 - seatDepth/2 - 0.5) {
-                    
-                    const seatMesh = createSeat(seatType, seatWidth, seatDepth, seatHeight);
-                    seatMesh.position.set(xPosition, yPosition, zPosition);
-                    
-                    // Rotate seats to face screen
-                    if (currentDesign.screen.position === 'back') {
-                        seatMesh.rotation.y = Math.PI;
-                    } else if (currentDesign.screen.position === 'left') {
-                        seatMesh.rotation.y = Math.PI/2;
-                    } else if (currentDesign.screen.position === 'right') {
-                        seatMesh.rotation.y = -Math.PI/2;
-                    }
-                    
-                    seatMesh.castShadow = true;
-                    seats.push(seatMesh);
-                    scene.add(seatMesh);
+                // Handle center aisle for larger configurations
+                if (seatsPerRow > 2 && seat === Math.ceil(seatsPerRow / 2)) {
+                    currentX += aisleWidth; // Add aisle space
                 }
+                
+                const xPosition = currentX + seatWidth / 2;
+                
+                // Create and position seat
+                const seatMesh = createSeat(seatType, seatWidth, seatDepth, seatHeight);
+                seatMesh.position.set(xPosition, yPosition, zPosition);
+                
+                // Rotate seats to face screen
+                if (currentDesign.screen.position === 'back') {
+                    seatMesh.rotation.y = Math.PI;
+                } else if (currentDesign.screen.position === 'left') {
+                    seatMesh.rotation.y = Math.PI/2;
+                } else if (currentDesign.screen.position === 'right') {
+                    seatMesh.rotation.y = -Math.PI/2;
+                }
+                
+                // Angle seats slightly toward screen for better viewing (like Audio Advice)
+                if (seatsPerRow > 3) {
+                    const centerOffset = xPosition;
+                    const angleAdjustment = centerOffset * 0.05; // Subtle angle adjustment
+                    seatMesh.rotation.y += angleAdjustment;
+                }
+                
+                seatMesh.castShadow = true;
+                seats.push(seatMesh);
+                scene.add(seatMesh);
+                
+                currentX += seatWidth + seatSpacing;
             }
         }
     }
