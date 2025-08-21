@@ -1,0 +1,63 @@
+/* Root wrapper */
+.wptd {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.wptd__panel {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.wptd-section + .wptd-section { margin-top: 16px; }
+.wptd-section h3 { margin: 0 0 8px; font-size: 14px; color: #111827; }
+
+.wptd-field { display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 10px; }
+.wptd-field__label { font-size: 12px; color: #374151; }
+.wptd-field__control input,
+.wptd-field__control select {
+  width: 100%;
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  padding: 0 10px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.wptd-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.wptd-btn {
+  appearance: none;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.wptd-btn:hover { background: #1d4ed8; }
+.wptd-btn--secondary { background: #6b7280; }
+.wptd-btn--secondary:hover { background: #4b5563; }
+
+.wptd-help { font-size: 12px; color: #6b7280; margin-top: 8px; }
+
+.wptd__stage {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.wptd__canvas { width: 100%; height: auto; display: block; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .wptd { grid-template-columns: 1fr; }
+}
