@@ -197,6 +197,66 @@ class TheaterRoomDesigner {
         
         wp_send_json_success($designs);
     }
+    
+    // Admin helper methods
+    public function get_total_designs() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'theater_room_designs';
+        return $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
+    }
+    
+    public function get_active_users() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'theater_room_designs';
+        return $wpdb->get_var("SELECT COUNT(DISTINCT user_id) FROM $table_name WHERE user_id > 0");
+    }
+    
+    public function get_designs_this_month() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'theater_room_designs';
+        return $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())");
+    }
+    
+    public function display_recent_designs() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'theater_room_designs';
+        
+        $designs = $wpdb->get_results("
+            SELECT d.*, u.display_name 
+            FROM $table_name d 
+            LEFT JOIN {$wpdb->users} u ON d.user_id = u.ID 
+            ORDER BY d.created_at DESC 
+            LIMIT 10
+        ");
+        
+        if (empty($designs)) {
+            echo '<p>' . __('No designs found.', 'theater-room-designer') . '</p>';
+            return;
+        }
+        
+        echo '<table class="widefat fixed striped">';
+        echo '<thead><tr>';
+        echo '<th>' . __('Design Name', 'theater-room-designer') . '</th>';
+        echo '<th>' . __('User', 'theater-room-designer') . '</th>';
+        echo '<th>' . __('Created', 'theater-room-designer') . '</th>';
+        echo '<th>' . __('Actions', 'theater-room-designer') . '</th>';
+        echo '</tr></thead>';
+        echo '<tbody>';
+        
+        foreach ($designs as $design) {
+            echo '<tr>';
+            echo '<td><strong>' . esc_html($design->design_name) . '</strong></td>';
+            echo '<td>' . ($design->display_name ? esc_html($design->display_name) : __('Guest', 'theater-room-designer')) . '</td>';
+            echo '<td>' . date_i18n(get_option('date_format'), strtotime($design->created_at)) . '</td>';
+            echo '<td>';
+            echo '<button class="button button-small trd-view-design" data-id="' . $design->id . '">' . __('View', 'theater-room-designer') . '</button> ';
+            echo '<button class="button button-small trd-delete-design" data-id="' . $design->id . '">' . __('Delete', 'theater-room-designer') . '</button>';
+            echo '</td>';
+            echo '</tr>';
+        }
+        
+        echo '</tbody></table>';
+    }
 }
 
 // Initialize the plugin

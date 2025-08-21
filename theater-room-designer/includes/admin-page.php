@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
                     <span class="dashicons dashicons-video-alt2"></span>
                 </div>
                 <div class="trd-stat-content">
-                    <h3><?php echo $this->get_total_designs(); ?></h3>
+                    <h3><?php echo $trd_instance->get_total_designs(); ?></h3>
                     <p><?php _e('Total Designs', 'theater-room-designer'); ?></p>
                 </div>
             </div>
@@ -30,7 +30,7 @@ if (!defined('ABSPATH')) {
                     <span class="dashicons dashicons-groups"></span>
                 </div>
                 <div class="trd-stat-content">
-                    <h3><?php echo $this->get_active_users(); ?></h3>
+                    <h3><?php echo $trd_instance->get_active_users(); ?></h3>
                     <p><?php _e('Active Users', 'theater-room-designer'); ?></p>
                 </div>
             </div>
@@ -95,65 +95,75 @@ if (!defined('ABSPATH')) {
 </div>
 
 <?php
-// Add methods to the main class for admin functionality
-if (!function_exists('get_total_designs')) {
-    function get_total_designs() {
+// Get the main plugin instance
+global $theater_room_designer_instance;
+if (!$theater_room_designer_instance) {
+    // Fallback if instance not available
+    function get_trd_instance() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'theater_room_designs';
-        return $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
+        return new class {
+            public function get_total_designs() {
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'theater_room_designs';
+                return $wpdb->get_var("SELECT COUNT(*) FROM $table_name") ?: 0;
+            }
+            
+            public function get_active_users() {
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'theater_room_designs';
+                return $wpdb->get_var("SELECT COUNT(DISTINCT user_id) FROM $table_name WHERE user_id > 0") ?: 0;
+            }
+            
+            public function get_designs_this_month() {
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'theater_room_designs';
+                return $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())") ?: 0;
+            }
+            
+            public function display_recent_designs() {
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'theater_room_designs';
+                
+                $designs = $wpdb->get_results("
+                    SELECT d.*, u.display_name 
+                    FROM $table_name d 
+                    LEFT JOIN {$wpdb->users} u ON d.user_id = u.ID 
+                    ORDER BY d.created_at DESC 
+                    LIMIT 10
+                ");
+                
+                if (empty($designs)) {
+                    echo '<p>' . __('No designs found.', 'theater-room-designer') . '</p>';
+                    return;
+                }
+                
+                echo '<table class="widefat fixed striped">';
+                echo '<thead><tr>';
+                echo '<th>' . __('Design Name', 'theater-room-designer') . '</th>';
+                echo '<th>' . __('User', 'theater-room-designer') . '</th>';
+                echo '<th>' . __('Created', 'theater-room-designer') . '</th>';
+                echo '<th>' . __('Actions', 'theater-room-designer') . '</th>';
+                echo '</tr></thead>';
+                echo '<tbody>';
+                
+                foreach ($designs as $design) {
+                    echo '<tr>';
+                    echo '<td><strong>' . esc_html($design->design_name) . '</strong></td>';
+                    echo '<td>' . ($design->display_name ? esc_html($design->display_name) : __('Guest', 'theater-room-designer')) . '</td>';
+                    echo '<td>' . date_i18n(get_option('date_format'), strtotime($design->created_at)) . '</td>';
+                    echo '<td>';
+                    echo '<button class="button button-small trd-view-design" data-id="' . $design->id . '">' . __('View', 'theater-room-designer') . '</button> ';
+                    echo '<button class="button button-small trd-delete-design" data-id="' . $design->id . '">' . __('Delete', 'theater-room-designer') . '</button>';
+                    echo '</td>';
+                    echo '</tr>';
+                }
+                
+                echo '</tbody></table>';
+            }
+        };
     }
-    
-    function get_active_users() {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'theater_room_designs';
-        return $wpdb->get_var("SELECT COUNT(DISTINCT user_id) FROM $table_name WHERE user_id > 0");
-    }
-    
-    function get_designs_this_month() {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'theater_room_designs';
-        return $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())");
-    }
-    
-    function display_recent_designs() {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'theater_room_designs';
-        
-        $designs = $wpdb->get_results("
-            SELECT d.*, u.display_name 
-            FROM $table_name d 
-            LEFT JOIN {$wpdb->users} u ON d.user_id = u.ID 
-            ORDER BY d.created_at DESC 
-            LIMIT 10
-        ");
-        
-        if (empty($designs)) {
-            echo '<p>' . __('No designs found.', 'theater-room-designer') . '</p>';
-            return;
-        }
-        
-        echo '<table class="widefat fixed striped">';
-        echo '<thead><tr>';
-        echo '<th>' . __('Design Name', 'theater-room-designer') . '</th>';
-        echo '<th>' . __('User', 'theater-room-designer') . '</th>';
-        echo '<th>' . __('Created', 'theater-room-designer') . '</th>';
-        echo '<th>' . __('Actions', 'theater-room-designer') . '</th>';
-        echo '</tr></thead>';
-        echo '<tbody>';
-        
-        foreach ($designs as $design) {
-            echo '<tr>';
-            echo '<td><strong>' . esc_html($design->design_name) . '</strong></td>';
-            echo '<td>' . ($design->display_name ? esc_html($design->display_name) : __('Guest', 'theater-room-designer')) . '</td>';
-            echo '<td>' . date_i18n(get_option('date_format'), strtotime($design->created_at)) . '</td>';
-            echo '<td>';
-            echo '<button class="button button-small trd-view-design" data-id="' . $design->id . '">' . __('View', 'theater-room-designer') . '</button> ';
-            echo '<button class="button button-small trd-delete-design" data-id="' . $design->id . '">' . __('Delete', 'theater-room-designer') . '</button>';
-            echo '</td>';
-            echo '</tr>';
-        }
-        
-        echo '</tbody></table>';
-    }
+    $trd_instance = get_trd_instance();
+} else {
+    $trd_instance = $theater_room_designer_instance;
 }
 ?>
