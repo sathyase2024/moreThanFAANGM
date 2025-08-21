@@ -71,27 +71,11 @@ $settings = get_option('trd_settings', array(
             </div>
         </div>
         
-        <!-- Main Content Area -->
-        <div class="trd-content">
+        <!-- Main Content Area - Audio Advice Layout -->
+        <div class="trd-content trd-audio-advice-layout">
             
-            <!-- Mobile Layout Toggle -->
-            <div class="trd-mobile-tabs" style="display: none;">
-                <button class="trd-mobile-tab active" data-panel="controls">
-                    <span class="trd-icon">⚙️</span>
-                    <?php _e('Controls', 'theater-room-designer'); ?>
-                </button>
-                <button class="trd-mobile-tab" data-panel="viewer">
-                    <span class="trd-icon">🎭</span>
-                    <?php _e('3D View', 'theater-room-designer'); ?>
-                </button>
-                <button class="trd-mobile-tab" data-panel="info">
-                    <span class="trd-icon">📊</span>
-                    <?php _e('Info', 'theater-room-designer'); ?>
-                </button>
-            </div>
-            
-            <!-- Left Panel - Controls -->
-            <div class="trd-panel trd-panel-left" id="trd-controls-panel">
+            <!-- Left Panel - Controls (Audio Advice Style) -->
+            <div class="trd-panel trd-panel-left trd-controls-panel" id="trd-controls-panel">
                 
                 <!-- Room Dimensions -->
                 <div class="trd-section">
