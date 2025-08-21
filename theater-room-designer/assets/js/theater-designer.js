@@ -61,7 +61,7 @@
         
         // Scene
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x222222);
+        scene.background = new THREE.Color(0x1a1a1a);
         
         // Camera
         const aspect = container.clientWidth / container.clientHeight;
@@ -69,19 +69,46 @@
         camera.position.set(20, 15, 20);
         camera.lookAt(0, 0, 0);
         
-        // Renderer
-        renderer = new THREE.WebGLRenderer({ antialias: true });
+        // Renderer with mobile optimizations
+        renderer = new THREE.WebGLRenderer({ 
+            antialias: window.devicePixelRatio <= 1, // Disable antialiasing on high DPI for performance
+            powerPreference: "high-performance",
+            precision: "mediump" // Use medium precision on mobile
+        });
+        
+        // Set pixel ratio for crisp rendering on mobile
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        
+        // Mobile-specific renderer settings
+        if (isMobile()) {
+            renderer.shadowMap.enabled = false; // Disable shadows on mobile for performance
+            renderer.setPixelRatio(1); // Reduce pixel ratio on mobile
+        }
+        
         container.appendChild(renderer.domElement);
         
-        // Controls
+        // Controls with mobile touch support
         if (typeof THREE.OrbitControls !== 'undefined') {
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.1;
             controls.maxPolarAngle = Math.PI / 2;
+            controls.minDistance = 5;
+            controls.maxDistance = 100;
+            
+            // Mobile touch optimizations
+            if (isMobile()) {
+                controls.enablePan = true;
+                controls.enableZoom = true;
+                controls.enableRotate = true;
+                controls.touches = {
+                    ONE: THREE.TOUCH.ROTATE,
+                    TWO: THREE.TOUCH.DOLLY_PAN
+                };
+            }
         }
         
         // Lights
@@ -90,8 +117,18 @@
         // Handle window resize
         window.addEventListener('resize', onWindowResize);
         
+        // Mobile orientation change
+        window.addEventListener('orientationchange', function() {
+            setTimeout(onWindowResize, 100);
+        });
+        
         // Start animation loop
         animate();
+    }
+    
+    function isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+               window.innerWidth <= 768;
     }
     
     function setupLighting() {
@@ -131,10 +168,27 @@
         const container = document.getElementById('trd-3d-container');
         if (!container) return;
         
-        const aspect = container.clientWidth / container.clientHeight;
+        // Get container dimensions
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        
+        // Update camera
+        const aspect = width / height;
         camera.aspect = aspect;
         camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
+        
+        // Update renderer
+        renderer.setSize(width, height);
+        
+        // Update pixel ratio for mobile
+        if (isMobile()) {
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        } else {
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        }
+        
+        // Force render
+        renderer.render(scene, camera);
     }
     
     function bindEvents() {
@@ -463,44 +517,106 @@
         const rows = currentDesign.seating.rows;
         const seatsPerRow = currentDesign.seating.seatsPerRow;
         const seatType = currentDesign.seating.type;
+        const roomLength = currentDesign.room.length;
+        const roomWidth = currentDesign.room.width;
+        const screenSize = currentDesign.screen.size;
         
-        // Seat dimensions based on type
-        let seatWidth = 2.5;
+        // Seat dimensions based on type (in feet, converted to scene units)
+        let seatWidth = 2.2;
         let seatDepth = 2.5;
         let seatHeight = 1.2;
         
         switch(seatType) {
             case 'sofa':
                 seatWidth = 6;
-                seatDepth = 3;
+                seatDepth = 3.5;
+                seatHeight = 1.1;
                 break;
             case 'chair':
                 seatWidth = 2;
-                seatDepth = 2;
+                seatDepth = 2.2;
+                seatHeight = 1.1;
+                break;
+            case 'recliner':
+                seatWidth = 2.5;
+                seatDepth = 3.2; // Recliners need more depth for reclining
+                seatHeight = 1.2;
                 break;
         }
         
-        // Calculate optimal viewing distance
-        const screenSize = currentDesign.screen.size;
-        const optimalDistance = screenSize * 0.1 * 2; // 2x screen width
+        // Calculate optimal viewing distance (Audio Advice style)
+        const screenDiagonal = screenSize * 0.0254; // Convert inches to meters
+        const screenWidth = screenDiagonal * 0.87; // 16:9 aspect ratio width
+        const optimalDistanceMin = screenWidth * 1.5; // Minimum viewing distance
+        const optimalDistanceMax = screenWidth * 2.5; // Maximum viewing distance
         
-        // Position seats
-        const totalWidth = seatsPerRow * seatWidth + (seatsPerRow - 1) * 0.5;
-        const startX = -totalWidth / 2 + seatWidth / 2;
+        // Use middle of optimal range, but ensure it fits in room
+        let baseDistance = (optimalDistanceMin + optimalDistanceMax) / 2;
+        
+        // Adjust based on screen position
+        let screenZ = 0;
+        switch(currentDesign.screen.position) {
+            case 'front':
+                screenZ = -roomLength/2;
+                break;
+            case 'back':
+                screenZ = roomLength/2;
+                baseDistance = -baseDistance; // Seats face opposite direction
+                break;
+            case 'left':
+                screenZ = 0; // Will need different calculation for side walls
+                break;
+            case 'right':
+                screenZ = 0;
+                break;
+        }
+        
+        // Position seating in center of room, facing screen
+        const totalSeatingWidth = seatsPerRow * seatWidth + (seatsPerRow - 1) * 0.3;
+        const startX = -totalSeatingWidth / 2 + seatWidth / 2;
+        
+        // Ensure seating fits in room with some margin
+        const availableLength = roomLength - Math.abs(baseDistance) - 2; // 2ft margin
+        const rowSpacing = Math.min(seatDepth + 1, availableLength / rows);
         
         for (let row = 0; row < rows; row++) {
-            const zPosition = optimalDistance + row * (seatDepth + 1);
-            const yPosition = seatHeight / 2 + row * 0.3; // Stepped seating
+            // Calculate Z position based on screen position
+            let zPosition;
+            if (currentDesign.screen.position === 'front') {
+                zPosition = screenZ + baseDistance + (row * rowSpacing);
+            } else if (currentDesign.screen.position === 'back') {
+                zPosition = screenZ + baseDistance - (row * rowSpacing);
+            } else {
+                // For side walls, position in center
+                zPosition = (row - rows/2) * rowSpacing;
+            }
+            
+            // Stepped seating height (theater style)
+            const yPosition = seatHeight / 2 + (row * 0.4);
             
             for (let seat = 0; seat < seatsPerRow; seat++) {
-                const xPosition = startX + seat * (seatWidth + 0.5);
+                const xPosition = startX + seat * (seatWidth + 0.3);
                 
-                const seatMesh = createSeat(seatType, seatWidth, seatDepth, seatHeight);
-                seatMesh.position.set(xPosition, yPosition, zPosition);
-                seatMesh.castShadow = true;
-                
-                seats.push(seatMesh);
-                scene.add(seatMesh);
+                // Ensure seat fits within room boundaries
+                if (Math.abs(xPosition) <= roomWidth/2 - seatWidth/2 - 0.5 &&
+                    Math.abs(zPosition) <= roomLength/2 - seatDepth/2 - 0.5) {
+                    
+                    const seatMesh = createSeat(seatType, seatWidth, seatDepth, seatHeight);
+                    seatMesh.position.set(xPosition, yPosition, zPosition);
+                    
+                    // Rotate seats to face screen
+                    if (currentDesign.screen.position === 'back') {
+                        seatMesh.rotation.y = Math.PI;
+                    } else if (currentDesign.screen.position === 'left') {
+                        seatMesh.rotation.y = Math.PI/2;
+                    } else if (currentDesign.screen.position === 'right') {
+                        seatMesh.rotation.y = -Math.PI/2;
+                    }
+                    
+                    seatMesh.castShadow = true;
+                    seats.push(seatMesh);
+                    scene.add(seatMesh);
+                }
             }
         }
     }

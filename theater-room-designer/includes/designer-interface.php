@@ -74,8 +74,24 @@ $settings = get_option('trd_settings', array(
         <!-- Main Content Area -->
         <div class="trd-content">
             
+            <!-- Mobile Layout Toggle -->
+            <div class="trd-mobile-tabs" style="display: none;">
+                <button class="trd-mobile-tab active" data-panel="controls">
+                    <span class="trd-icon">⚙️</span>
+                    <?php _e('Controls', 'theater-room-designer'); ?>
+                </button>
+                <button class="trd-mobile-tab" data-panel="viewer">
+                    <span class="trd-icon">🎭</span>
+                    <?php _e('3D View', 'theater-room-designer'); ?>
+                </button>
+                <button class="trd-mobile-tab" data-panel="info">
+                    <span class="trd-icon">📊</span>
+                    <?php _e('Info', 'theater-room-designer'); ?>
+                </button>
+            </div>
+            
             <!-- Left Panel - Controls -->
-            <div class="trd-panel trd-panel-left">
+            <div class="trd-panel trd-panel-left" id="trd-controls-panel">
                 
                 <!-- Room Dimensions -->
                 <div class="trd-section">
@@ -200,7 +216,7 @@ $settings = get_option('trd_settings', array(
             </div>
             
             <!-- Center Panel - 3D Visualization -->
-            <div class="trd-panel trd-panel-center">
+            <div class="trd-panel trd-panel-center" id="trd-viewer-panel">
                 <div class="trd-viewport">
                     <div id="trd-3d-container" class="trd-3d-container">
                         <!-- Three.js canvas will be inserted here -->
@@ -235,7 +251,7 @@ $settings = get_option('trd_settings', array(
             </div>
             
             <!-- Right Panel - Information & Recommendations -->
-            <div class="trd-panel trd-panel-right">
+            <div class="trd-panel trd-panel-right" id="trd-info-panel">
                 
                 <!-- Design Summary -->
                 <div class="trd-section">
