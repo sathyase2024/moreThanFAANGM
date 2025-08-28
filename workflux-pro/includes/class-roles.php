@@ -46,6 +46,7 @@ class WorkFluxPro_Roles {
             'capabilities' => array(
                 'read',
                 'wfp_manage_team',
+                'wfp_manage_projects',
                 'wfp_approve_leaves',
                 'wfp_approve_external_duty',
                 'wfp_view_team_reports',
