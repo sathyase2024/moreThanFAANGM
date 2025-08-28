@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkFlux Pro Mobile Attendance Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .mobile-container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .status-bar {
+            background: #000;
+            color: white;
+            padding: 8px 20px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .app-header {
+            background: #007cba;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .app-header h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .app-header .subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .attendance-section {
+            padding: 30px 20px;
+        }
+        
+        .clock-status {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .clock-time {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .clock-date {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 20px;
+            border-radius: 25px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .status-clocked-out {
+            background: #ffe6e6;
+            color: #d32f2f;
+        }
+        
+        .status-clocked-in {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            margin-right: 10px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .clock-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .clock-in-btn {
+            background: linear-gradient(45deg, #4caf50, #45a049);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .clock-out-btn {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+        }
+        
+        .clock-button:active {
+            transform: scale(0.95);
+        }
+        
+        .location-section {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        
+        .location-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .quick-action {
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-action:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+        
+        .quick-action-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .today-summary {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        
+        .demo-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px;
+            text-align: center;
+            color: #856404;
+        }
+        
+        .api-endpoints {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .endpoint {
+            margin: 8px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #007cba;
+        }
+        
+        .geolocation-section {
+            background: #e3f2fd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .offline-indicator {
+            background: #ffecb3;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #f57f17;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 ⚡ 🔋</span>
+        </div>
+        
+        <!-- App Header -->
+        <div class="app-header">
+            <h1>WorkFlux Pro</h1>
+            <div class="subtitle">Mobile Attendance System</div>
+        </div>
+        
+        <!-- Offline Indicator -->
+        <div class="offline-indicator" id="offline-indicator">
+            📡 Working Offline - Changes will sync when connected
+        </div>
+        
+        <!-- Demo Note -->
+        <div class="demo-note">
+            <strong>📱 Mobile Demo Interface</strong><br>
+            This demonstrates WorkFlux Pro's mobile attendance capabilities
+        </div>
+        
+        <!-- Attendance Section -->
+        <div class="attendance-section">
+            <!-- Current Time -->
+            <div class="clock-status">
+                <div class="clock-time" id="current-time">09:41</div>
+                <div class="clock-date" id="current-date">Monday, December 25, 2024</div>
+                
+                <div class="status-indicator status-clocked-out" id="status-indicator">
+                    <span class="pulse"></span>
+                    <span id="status-text">Not Clocked In</span>
+                </div>
+            </div>
+            
+            <!-- Clock In/Out Button -->
+            <button class="clock-button clock-in-btn" id="clock-button" onclick="toggleClock()">
+                <span id="button-text">CLOCK IN</span>
+            </button>
+            
+            <!-- Location Section -->
+            <div class="location-section">
+                <label for="location-input"><strong>📍 Location:</strong></label>
+                <input type="text" 
+                       id="location-input" 
+                       class="location-input" 
+                       placeholder="Enter your location or use GPS"
+                       value="">
+                <button onclick="getLocation()" style="margin-top: 10px; padding: 8px 15px; background: #007cba; color: white; border: none; border-radius: 4px; font-size: 14px;">
+                    📍 Use GPS Location
+                </button>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <a href="#" class="quick-action" onclick="showProjects()">
+                    <span class="quick-action-icon">📂</span>
+                    <div>My Projects</div>
+                </a>
+                <a href="#" class="quick-action" onclick="showLeaves()">
+                    <span class="quick-action-icon">🏖️</span>
+                    <div>Leave Requests</div>
+                </a>
+                <a href="#" class="quick-action" onclick="showReports()">
+                    <span class="quick-action-icon">📊</span>
+                    <div>My Reports</div>
+                </a>
+                <a href="#" class="quick-action" onclick="showProfile()">
+                    <span class="quick-action-icon">👤</span>
+                    <div>Profile</div>
+                </a>
+            </div>
+            
+            <!-- Today's Summary -->
+            <div class="today-summary">
+                <h3 style="margin-bottom: 15px; color: #333;">📈 Today's Summary</h3>
+                <div class="summary-item">
+                    <span>⏰ Hours Worked:</span>
+                    <strong id="hours-worked">0h 0m</strong>
+                </div>
+                <div class="summary-item">
+                    <span>🚀 Active Projects:</span>
+                    <strong>2</strong>
+                </div>
+                <div class="summary-item">
+                    <span>✅ Tasks Completed:</span>
+                    <strong>3</strong>
+                </div>
+                <div class="summary-item">
+                    <span>☕ Break Time:</span>
+                    <strong>45m</strong>
+                </div>
+            </div>
+            
+            <!-- Geolocation Info -->
+            <div class="geolocation-section">
+                <strong>🌍 Location Features:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>GPS-based location tracking</li>
+                    <li>Manual location entry</li>
+                    <li>IP-based location detection</li>
+                    <li>Geo-fencing support</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- API Endpoints Info -->
+        <div class="api-endpoints">
+            <strong>📡 Available Mobile API Endpoints:</strong>
+            <div class="endpoint">POST /wp-json/workflux-pro/v1/time-tracking/clock-in</div>
+            <div class="endpoint">POST /wp-json/workflux-pro/v1/time-tracking/clock-out</div>
+            <div class="endpoint">GET /wp-json/workflux-pro/v1/time-tracking/status</div>
+            <div class="endpoint">POST /wp-json/workflux-pro/v1/projects/start</div>
+            <div class="endpoint">POST /wp-json/workflux-pro/v1/leaves/submit</div>
+            <div class="endpoint">GET /wp-json/workflux-pro/v1/leaves/balance</div>
+        </div>
+    </div>
+
+    <script>
+        let isClockedIn = false;
+        let clockInTime = null;
+        
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // Update hours worked if clocked in
+            if (isClockedIn && clockInTime) {
+                const hoursWorked = Math.floor((now - clockInTime) / (1000 * 60 * 60));
+                const minutesWorked = Math.floor(((now - clockInTime) % (1000 * 60 * 60)) / (1000 * 60));
+                document.getElementById('hours-worked').textContent = `${hoursWorked}h ${minutesWorked}m`;
+            }
+        }
+        
+        // Toggle clock in/out
+        function toggleClock() {
+            const button = document.getElementById('clock-button');
+            const buttonText = document.getElementById('button-text');
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            
+            if (!isClockedIn) {
+                // Clock In
+                isClockedIn = true;
+                clockInTime = new Date();
+                
+                button.className = 'clock-button clock-out-btn';
+                buttonText.textContent = 'CLOCK OUT';
+                
+                statusIndicator.className = 'status-indicator status-clocked-in';
+                statusText.textContent = 'Clocked In - ' + clockInTime.toLocaleTimeString();
+                
+                // Simulate API call
+                simulateApiCall('clock-in');
+                
+                // Vibrate if supported
+                if (navigator.vibrate) {
+                    navigator.vibrate(200);
+                }
+            } else {
+                // Clock Out
+                isClockedIn = false;
+                
+                button.className = 'clock-button clock-in-btn';
+                buttonText.textContent = 'CLOCK IN';
+                
+                statusIndicator.className = 'status-indicator status-clocked-out';
+                statusText.textContent = 'Not Clocked In';
+                
+                // Simulate API call
+                simulateApiCall('clock-out');
+                
+                // Vibrate if supported
+                if (navigator.vibrate) {
+                    navigator.vibrate([100, 50, 100]);
+                }
+                
+                clockInTime = null;
+            }
+        }
+        
+        // Get GPS location
+        function getLocation() {
+            const locationInput = document.getElementById('location-input');
+            
+            if (navigator.geolocation) {
+                locationInput.value = 'Getting location...';
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude.toFixed(6);
+                        const lon = position.coords.longitude.toFixed(6);
+                        locationInput.value = `GPS: ${lat}, ${lon}`;
+                        
+                        // Optionally reverse geocode to get address
+                        // This would normally use a geocoding service
+                        setTimeout(() => {
+                            locationInput.value = 'Office Building, Main Street (GPS)';
+                        }, 1000);
+                    },
+                    function(error) {
+                        locationInput.value = 'Location not available';
+                        console.error('Geolocation error:', error);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+        
+        // Simulate API calls
+        function simulateApiCall(action) {
+            console.log(`API Call: ${action}`, {
+                action: action,
+                location: document.getElementById('location-input').value || 'Not specified',
+                timestamp: new Date().toISOString(),
+                ip_address: 'Detected automatically',
+                user_agent: navigator.userAgent.substring(0, 50) + '...'
+            });
+            
+            // Show a brief success message
+            const originalText = document.getElementById('button-text').textContent;
+            document.getElementById('button-text').textContent = '✓ SUCCESS';
+            setTimeout(() => {
+                document.getElementById('button-text').textContent = originalText;
+            }, 1000);
+        }
+        
+        // Quick action functions
+        function showProjects() {
+            alert('📂 Projects:\n\n• E-Commerce Platform (In Progress)\n• Mobile App Development (Planning)\n• Website Redesign (Completed)');
+        }
+        
+        function showLeaves() {
+            alert('🏖️ Leave Balance:\n\n• Annual: 15 days remaining\n• Sick: 8 days remaining\n• Personal: 3 days remaining\n\nRecent request: Approved');
+        }
+        
+        function showReports() {
+            alert('📊 This Week:\n\n• Hours Worked: 32h 15m\n• Projects: 3 active\n• Tasks Completed: 12\n• Attendance: 95%');
+        }
+        
+        function showProfile() {
+            alert('👤 Profile:\n\n• John Doe\n• Frontend Developer\n• Employee ID: EMP2024001\n• Department: IT');
+        }
+        
+        // Check online/offline status
+        function updateOnlineStatus() {
+            const offlineIndicator = document.getElementById('offline-indicator');
+            if (navigator.onLine) {
+                offlineIndicator.style.display = 'none';
+            } else {
+                offlineIndicator.style.display = 'block';
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            // Set default location to something realistic
+            document.getElementById('location-input').value = 'Office - Desk 15';
+            
+            // Check online status
+            updateOnlineStatus();
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            
+            // Add touch feedback for mobile
+            document.querySelectorAll('.clock-button, .quick-action').forEach(element => {
+                element.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.95)';
+                });
+                element.addEventListener('touchend', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        });
+        
+        // Service Worker for offline functionality (if implemented)
+        if ('serviceWorker' in navigator) {
+            console.log('Service Worker support detected - can implement offline attendance');
+        }
+        
+        // Push notification support
+        if ('Notification' in window) {
+            console.log('Push notification support available');
+        }
+    </script>
+</body>
+</html>
