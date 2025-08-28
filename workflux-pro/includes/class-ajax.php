@@ -27,17 +27,61 @@ class WorkFluxPro_Ajax {
      * Initialize hooks
      */
     private function init_hooks() {
-        // Add nonce verification for all AJAX calls
-        add_action('wp_ajax_wfp_verify_nonce', array($this, 'verify_nonce'));
-        add_action('wp_ajax_nopriv_wfp_verify_nonce', array($this, 'verify_nonce'));
+        // Time tracking actions
+        add_action('wp_ajax_wfp_clock_in', array($this, 'clock_in'));
+        add_action('wp_ajax_wfp_clock_out', array($this, 'clock_out'));
+        add_action('wp_ajax_wfp_start_project', array($this, 'start_project_timer'));
+        add_action('wp_ajax_wfp_stop_project', array($this, 'stop_project_timer'));
+        
+        // Leave management actions
+        add_action('wp_ajax_wfp_submit_leave_request', array($this, 'submit_leave_request'));
+        add_action('wp_ajax_wfp_approve_leave', array($this, 'approve_leave'));
+        
+        // External duty actions
+        add_action('wp_ajax_wfp_submit_external_duty', array($this, 'submit_external_duty'));
+        add_action('wp_ajax_wfp_approve_external_duty', array($this, 'approve_external_duty'));
+        
+        // Project management actions
+        add_action('wp_ajax_wfp_create_project', array($this, 'create_project'));
+        add_action('wp_ajax_wfp_assign_project', array($this, 'assign_project'));
+        
+        // Employee management actions
+        add_action('wp_ajax_wfp_create_employee', array($this, 'create_employee'));
+        add_action('wp_ajax_wfp_update_employee', array($this, 'update_employee'));
+        
+        // Dashboard actions
+        add_action('wp_ajax_wfp_get_dashboard_data', array($this, 'get_dashboard_data'));
+        
+        // Role management actions
+        add_action('wp_ajax_wfp_update_user_role', array($this, 'update_user_role'));
+        
+        // Reports actions
+        add_action('wp_ajax_wfp_get_reports', array($this, 'get_reports'));
+        add_action('wp_ajax_wfp_export_report', array($this, 'export_report'));
     }
     
     /**
      * Verify nonce for security
      */
-    public static function verify_nonce() {
-        if (!wp_verify_nonce($_POST['nonce'], 'workflux_pro_nonce')) {
-            wp_die('Security check failed');
+    public static function verify_nonce($action = 'workflux_pro_nonce') {
+        // Check if nonce is provided
+        $nonce = $_POST['nonce'] ?? $_POST['_wpnonce'] ?? $_REQUEST['_wpnonce'] ?? '';
+        
+        if (empty($nonce)) {
+            self::send_response(false, null, __('Security token missing', 'workflux-pro'));
+            wp_die();
+        }
+        
+        // Verify nonce
+        if (!wp_verify_nonce($nonce, $action)) {
+            self::send_response(false, null, __('Security check failed', 'workflux-pro'));
+            wp_die();
+        }
+        
+        // Check if user is logged in
+        if (!is_user_logged_in()) {
+            self::send_response(false, null, __('Please log in to continue', 'workflux-pro'));
+            wp_die();
         }
     }
     
@@ -100,6 +144,54 @@ class WorkFluxPro_Ajax {
             self::send_response(true, $result, __('Clocked out successfully', 'workflux-pro'));
         } else {
             self::send_response(false, null, __('Failed to clock out', 'workflux-pro'));
+        }
+    }
+    
+    /**
+     * Start project timer
+     */
+    public static function start_project_timer() {
+        self::verify_nonce();
+        
+        if (!WorkFluxPro_Roles::user_can('wfp_track_time')) {
+            self::send_response(false, null, __('Permission denied', 'workflux-pro'));
+            return;
+        }
+        
+        $user_id = get_current_user_id();
+        $project_id = intval($_POST['project_id'] ?? 0);
+        $task_id = intval($_POST['task_id'] ?? 0);
+        
+        $result = WorkFluxPro_Time_Tracking::start_project_timer($user_id, $project_id, $task_id);
+        
+        if ($result) {
+            self::send_response(true, $result, __('Project timer started', 'workflux-pro'));
+        } else {
+            self::send_response(false, null, __('Failed to start project timer', 'workflux-pro'));
+        }
+    }
+    
+    /**
+     * Stop project timer
+     */
+    public static function stop_project_timer() {
+        self::verify_nonce();
+        
+        if (!WorkFluxPro_Roles::user_can('wfp_track_time')) {
+            self::send_response(false, null, __('Permission denied', 'workflux-pro'));
+            return;
+        }
+        
+        $user_id = get_current_user_id();
+        $tracking_id = intval($_POST['tracking_id'] ?? 0);
+        $description = sanitize_textarea_field($_POST['description'] ?? '');
+        
+        $result = WorkFluxPro_Time_Tracking::stop_project_timer($user_id, $tracking_id, $description);
+        
+        if ($result) {
+            self::send_response(true, $result, __('Project timer stopped', 'workflux-pro'));
+        } else {
+            self::send_response(false, null, __('Failed to stop project timer', 'workflux-pro'));
         }
     }
     
@@ -421,6 +513,148 @@ class WorkFluxPro_Ajax {
     }
     
     /**
+     * Create employee
+     */
+    public static function create_employee() {
+        self::verify_nonce();
+        
+        if (!WorkFluxPro_Roles::user_can('wfp_manage_employees')) {
+            self::send_response(false, null, __('Permission denied', 'workflux-pro'));
+            return;
+        }
+        
+        // Sanitize user data
+        $user_data = array(
+            'user_login' => sanitize_user($_POST['user_login'] ?? ''),
+            'user_email' => sanitize_email($_POST['user_email'] ?? ''),
+            'user_pass' => $_POST['user_pass'] ?? '',
+            'first_name' => sanitize_text_field($_POST['first_name'] ?? ''),
+            'last_name' => sanitize_text_field($_POST['last_name'] ?? ''),
+            'display_name' => sanitize_text_field($_POST['display_name'] ?? ''),
+            'role' => 'subscriber'
+        );
+        
+        // Validate required fields
+        if (empty($user_data['user_login']) || empty($user_data['user_email']) || empty($user_data['user_pass'])) {
+            self::send_response(false, null, __('Username, email, and password are required', 'workflux-pro'));
+            return;
+        }
+        
+        // Check if username or email already exists
+        if (username_exists($user_data['user_login']) || email_exists($user_data['user_email'])) {
+            self::send_response(false, null, __('Username or email already exists', 'workflux-pro'));
+            return;
+        }
+        
+        // Create WordPress user
+        $user_id = wp_insert_user($user_data);
+        
+        if (is_wp_error($user_id)) {
+            self::send_response(false, null, $user_id->get_error_message());
+            return;
+        }
+        
+        // Assign WorkFlux role
+        $workflux_role = sanitize_text_field($_POST['workflux_role'] ?? 'wfp_employee');
+        $user = new WP_User($user_id);
+        $user->remove_role('subscriber');
+        $user->add_role($workflux_role);
+        
+        // Create employee record
+        $employee_data = array(
+            'user_id' => $user_id,
+            'employee_id' => sanitize_text_field($_POST['employee_id'] ?? ''),
+            'department' => sanitize_text_field($_POST['department'] ?? ''),
+            'designation' => sanitize_text_field($_POST['designation'] ?? ''),
+            'hire_date' => sanitize_text_field($_POST['hire_date'] ?? date('Y-m-d')),
+            'manager_id' => intval($_POST['manager_id'] ?? 0),
+            'status' => 'active'
+        );
+        
+        $result = WorkFluxPro_User_Management::create_employee($employee_data);
+        
+        if ($result) {
+            self::send_response(true, array('user_id' => $user_id), __('Employee created successfully', 'workflux-pro'));
+        } else {
+            // If employee creation fails, remove the WordPress user
+            wp_delete_user($user_id);
+            self::send_response(false, null, __('Failed to create employee record', 'workflux-pro'));
+        }
+    }
+    
+    /**
+     * Update employee
+     */
+    public static function update_employee() {
+        self::verify_nonce();
+        
+        if (!WorkFluxPro_Roles::user_can('wfp_manage_employees')) {
+            self::send_response(false, null, __('Permission denied', 'workflux-pro'));
+            return;
+        }
+        
+        $user_id = intval($_POST['user_id'] ?? 0);
+        
+        if (!$user_id) {
+            self::send_response(false, null, __('Invalid user ID', 'workflux-pro'));
+            return;
+        }
+        
+        // Update WordPress user data
+        $user_data = array(
+            'ID' => $user_id,
+            'user_email' => sanitize_email($_POST['user_email'] ?? ''),
+            'first_name' => sanitize_text_field($_POST['first_name'] ?? ''),
+            'last_name' => sanitize_text_field($_POST['last_name'] ?? ''),
+            'display_name' => sanitize_text_field($_POST['display_name'] ?? '')
+        );
+        
+        // Update password if provided
+        if (!empty($_POST['user_pass'])) {
+            $user_data['user_pass'] = $_POST['user_pass'];
+        }
+        
+        $wp_result = wp_update_user($user_data);
+        
+        if (is_wp_error($wp_result)) {
+            self::send_response(false, null, $wp_result->get_error_message());
+            return;
+        }
+        
+        // Update WorkFlux role if provided
+        if (!empty($_POST['workflux_role'])) {
+            $workflux_role = sanitize_text_field($_POST['workflux_role']);
+            $user = new WP_User($user_id);
+            
+            // Remove all WorkFlux roles
+            $wfp_roles = array('wfp_super_admin', 'wfp_managing_head', 'wfp_hr_manager', 'wfp_project_admin', 'wfp_employee');
+            foreach ($wfp_roles as $role) {
+                $user->remove_role($role);
+            }
+            
+            // Add new role
+            $user->add_role($workflux_role);
+        }
+        
+        // Update employee data
+        $employee_data = array(
+            'employee_id' => sanitize_text_field($_POST['employee_id'] ?? ''),
+            'department' => sanitize_text_field($_POST['department'] ?? ''),
+            'designation' => sanitize_text_field($_POST['designation'] ?? ''),
+            'manager_id' => intval($_POST['manager_id'] ?? 0),
+            'status' => sanitize_text_field($_POST['status'] ?? 'active')
+        );
+        
+        $result = WorkFluxPro_User_Management::update_employee($user_id, $employee_data);
+        
+        if ($result) {
+            self::send_response(true, null, __('Employee updated successfully', 'workflux-pro'));
+        } else {
+            self::send_response(false, null, __('Failed to update employee', 'workflux-pro'));
+        }
+    }
+    
+    /**
      * Update user role
      */
     public static function update_user_role() {
@@ -466,6 +700,32 @@ class WorkFluxPro_Ajax {
             self::send_response(true, $data);
         } else {
             self::send_response(false, null, __('Failed to generate report', 'workflux-pro'));
+        }
+    }
+    
+    /**
+     * Export report
+     */
+    public static function export_report() {
+        self::verify_nonce();
+        
+        $report_type = sanitize_text_field($_POST['report_type'] ?? '');
+        $date_from = sanitize_text_field($_POST['date_from'] ?? '');
+        $date_to = sanitize_text_field($_POST['date_to'] ?? '');
+        $format = sanitize_text_field($_POST['format'] ?? 'csv');
+        $user_id = get_current_user_id();
+        
+        if (!WorkFluxPro_Roles::user_can('wfp_view_own_reports') && !WorkFluxPro_Roles::user_can('wfp_view_team_reports')) {
+            self::send_response(false, null, __('Permission denied', 'workflux-pro'));
+            return;
+        }
+        
+        $export_url = WorkFluxPro_Reports::export_report($report_type, $date_from, $date_to, $format, $user_id);
+        
+        if ($export_url) {
+            self::send_response(true, array('download_url' => $export_url), __('Report exported successfully', 'workflux-pro'));
+        } else {
+            self::send_response(false, null, __('Failed to export report', 'workflux-pro'));
         }
     }
 }
