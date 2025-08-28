@@ -60,6 +60,7 @@ class WorkFluxPro_Roles {
             'capabilities' => array(
                 'read',
                 'wfp_user_onboarding',
+                'wfp_manage_employees',
                 'wfp_approve_leaves',
                 'wfp_approve_external_duty',
                 'wfp_manage_employee_data',
@@ -138,14 +139,22 @@ class WorkFluxPro_Roles {
         foreach (self::ROLES as $role_key => $role_data) {
             remove_role($role_key);
         }
+    }
+    
+    /**
+     * Refresh roles and capabilities
+     */
+    public static function refresh_roles() {
+        // Remove and recreate all roles to ensure capabilities are updated
+        self::remove_custom_roles();
+        self::add_custom_roles();
         
-        // Remove capabilities from administrator role
-        $admin_role = get_role('administrator');
-        if ($admin_role) {
-            foreach (self::ROLES['wfp_super_admin']['capabilities'] as $cap) {
-                $admin_role->remove_cap($cap);
-            }
+        // Clear any cached capabilities
+        if (function_exists('wp_cache_flush')) {
+            wp_cache_flush();
         }
+        
+        return true;
     }
     
     /**
