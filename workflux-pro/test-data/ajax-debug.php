@@ -140,6 +140,33 @@ if (!current_user_can('manage_options')) {
     </div>
     
     <div class="debug-section">
+        <h2>Leave Management</h2>
+        <div class="form-group">
+            <label>Leave Type:</label>
+            <select id="leave-type">
+                <option value="annual">Annual Leave</option>
+                <option value="sick">Sick Leave</option>
+                <option value="personal">Personal Leave</option>
+                <option value="emergency">Emergency Leave</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Start Date:</label>
+            <input type="date" id="leave-start" value="<?php echo date('Y-m-d', strtotime('+1 day')); ?>">
+        </div>
+        <div class="form-group">
+            <label>End Date:</label>
+            <input type="date" id="leave-end" value="<?php echo date('Y-m-d', strtotime('+3 days')); ?>">
+        </div>
+        <div class="form-group">
+            <label>Reason:</label>
+            <textarea id="leave-reason" placeholder="Test leave request">Test leave request from AJAX debug tool</textarea>
+        </div>
+        <button class="debug-button" onclick="submitLeaveRequest()">Submit Leave Request</button>
+        <div id="leave-result" class="debug-result" style="display:none;"></div>
+    </div>
+    
+    <div class="debug-section">
         <h2>Dashboard Data</h2>
         <button class="debug-button" onclick="getDashboardData()">Get Dashboard Data</button>
         <div id="dashboard-result" class="debug-result" style="display:none;"></div>
@@ -249,6 +276,17 @@ if (!current_user_can('manage_options')) {
             };
             
             makeAjaxRequest('wfp_clock_out', data, 'time-result');
+        }
+        
+        function submitLeaveRequest() {
+            const data = {
+                leave_type: $('#leave-type').val(),
+                start_date: $('#leave-start').val(),
+                end_date: $('#leave-end').val(),
+                reason: $('#leave-reason').val()
+            };
+            
+            makeAjaxRequest('wfp_submit_leave_request', data, 'leave-result');
         }
         
         function getDashboardData() {

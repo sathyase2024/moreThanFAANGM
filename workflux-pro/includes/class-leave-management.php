@@ -46,7 +46,7 @@ class WorkFluxPro_Leave_Management {
      * Submit leave request
      *
      * @param array $data
-     * @return int|false
+     * @return int|array int for success, array with error for failure
      */
     public static function submit_request($data) {
         global $wpdb;
@@ -54,13 +54,27 @@ class WorkFluxPro_Leave_Management {
         // Validate required fields
         if (empty($data['employee_id']) || empty($data['leave_type']) || 
             empty($data['start_date']) || empty($data['end_date'])) {
-            return false;
+            return array('error' => __('Required fields are missing', 'workflux-pro'));
+        }
+        
+        // Validate dates
+        if (strtotime($data['start_date']) === false || strtotime($data['end_date']) === false) {
+            return array('error' => __('Invalid date format', 'workflux-pro'));
+        }
+        
+        if (strtotime($data['start_date']) > strtotime($data['end_date'])) {
+            return array('error' => __('Start date cannot be after end date', 'workflux-pro'));
+        }
+        
+        // Check if start date is in the past (allow same day)
+        if (strtotime($data['start_date']) < strtotime('today')) {
+            return array('error' => __('Cannot request leave for past dates', 'workflux-pro'));
         }
         
         // Get employee record
         $employee = WorkFluxPro_User_Management::get_employee_by_user_id($data['employee_id']);
         if (!$employee) {
-            return false;
+            return array('error' => __('Employee record not found', 'workflux-pro'));
         }
         
         // Calculate days requested
@@ -69,14 +83,20 @@ class WorkFluxPro_Leave_Management {
         $interval = $start_date->diff($end_date);
         $days_requested = $interval->days + 1; // Include both start and end dates
         
+        // Validate reasonable duration (max 365 days)
+        if ($days_requested > 365) {
+            return array('error' => __('Leave duration cannot exceed 365 days', 'workflux-pro'));
+        }
+        
         // Check for overlapping requests
         if (self::has_overlapping_request($employee->id, $data['start_date'], $data['end_date'])) {
-            return false;
+            return array('error' => __('You already have a leave request for these dates', 'workflux-pro'));
         }
         
         // Check leave balance
         if (!self::has_sufficient_balance($employee->id, $data['leave_type'], $days_requested)) {
-            return false;
+            $balance = self::get_leave_balance($employee->id, $data['leave_type']);
+            return array('error' => sprintf(__('Insufficient leave balance. Available: %s days, Requested: %s days', 'workflux-pro'), $balance, $days_requested));
         }
         
         $leave_requests_table = $wpdb->prefix . 'wfp_leave_requests';
@@ -103,10 +123,15 @@ class WorkFluxPro_Leave_Management {
             // Send notification to approvers
             self::notify_approvers($request_id);
             
-            // Log the action
+            // Log the action and trigger email notifications
             do_action('workflux_pro_leave_request_submitted', $request_id, $data);
             
             return $request_id;
+        }
+        
+        // Log the error for debugging
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('WorkFlux Pro: Failed to insert leave request - ' . $wpdb->last_error);
         }
         
         return false;

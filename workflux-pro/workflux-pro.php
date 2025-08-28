@@ -105,6 +105,9 @@ class WorkFluxPro {
         
         // API includes
         require_once WORKFLUX_PRO_PLUGIN_DIR . 'includes/class-rest-api.php';
+        
+        // Email notifications
+        require_once WORKFLUX_PRO_PLUGIN_DIR . 'includes/class-email-notifications.php';
     }
     
     /**
@@ -131,6 +134,7 @@ class WorkFluxPro {
         new WorkFluxPro_Shortcodes();
         new WorkFluxPro_Ajax();
         new WorkFluxPro_REST_API();
+        new WorkFluxPro_Email_Notifications();
     }
     
     /**

@@ -270,10 +270,15 @@ class WorkFluxPro_Ajax {
         
         $result = WorkFluxPro_Leave_Management::submit_request($data);
         
-        if ($result) {
-            self::send_response(true, $result, __('Leave request submitted successfully', 'workflux-pro'));
+        if (is_array($result) && isset($result['error'])) {
+            // Handle validation errors
+            self::send_response(false, null, $result['error']);
+        } elseif ($result) {
+            // Success - $result is the request ID
+            self::send_response(true, array('request_id' => $result), __('Leave request submitted successfully', 'workflux-pro'));
         } else {
-            self::send_response(false, null, __('Failed to submit leave request', 'workflux-pro'));
+            // Generic failure
+            self::send_response(false, null, __('Failed to submit leave request. Please try again.', 'workflux-pro'));
         }
     }
     
