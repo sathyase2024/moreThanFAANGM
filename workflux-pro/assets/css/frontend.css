@@ -1,0 +1,946 @@
+/**
+ * WorkFlux Pro Frontend Styles
+ * 
+ * @package WorkFluxPro
+ * @since 1.0.0
+ */
+
+/* Frontend Wrapper */
+.wfp-frontend-wrapper {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+.wfp-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Navigation */
+.wfp-frontend-nav {
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.wfp-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e9ecef;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+}
+
+.wfp-nav-brand h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.wfp-nav-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wfp-user-info {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.wfp-user-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.wfp-user-role {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.wfp-nav-menu {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: #f8f9fa;
+}
+
+.wfp-nav-item {
+    flex: 1;
+    min-width: 150px;
+}
+
+.wfp-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 15px 20px;
+    text-decoration: none;
+    color: #495057;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.wfp-nav-link:hover,
+.wfp-nav-link.active {
+    background: #fff;
+    color: #667eea;
+    border-bottom-color: #667eea;
+    text-decoration: none;
+}
+
+.wfp-nav-link .dashicons {
+    font-size: 18px;
+}
+
+/* Page Title */
+.wfp-page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 30px;
+    text-align: center;
+    position: relative;
+}
+
+.wfp-page-title:after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+}
+
+/* Dashboard Widgets */
+.wfp-dashboard-widgets {
+    margin-bottom: 40px;
+}
+
+.wfp-widget-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.wfp-widget {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.wfp-widget:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.wfp-widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.wfp-widget-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.wfp-widget-content {
+    text-align: center;
+}
+
+.wfp-status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.wfp-status-indicator.active {
+    background: #28a745;
+    animation: pulse 2s infinite;
+}
+
+.wfp-status-indicator.inactive {
+    background: #6c757d;
+}
+
+.wfp-hours-display,
+.wfp-projects-count {
+    margin-top: 15px;
+}
+
+.wfp-hours-number,
+.wfp-count-number {
+    display: block;
+    font-size: 36px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 5px;
+}
+
+.wfp-hours-label,
+.wfp-count-label {
+    font-size: 14px;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Task Lists */
+.wfp-task-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.wfp-task-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #e9ecef;
+    transition: background 0.3s ease;
+}
+
+.wfp-task-item:hover {
+    background: #f8f9fa;
+    margin: 0 -15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-radius: 8px;
+}
+
+.wfp-task-item:last-child {
+    border-bottom: none;
+}
+
+.wfp-task-info {
+    flex: 1;
+}
+
+.wfp-task-title {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.wfp-task-project {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* Status Badges */
+.wfp-status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wfp-status-active { background: #d4edda; color: #155724; }
+.wfp-status-inactive { background: #f8f9fa; color: #6c757d; }
+.wfp-status-pending { background: #fff3cd; color: #856404; }
+.wfp-status-approved { background: #d4edda; color: #155724; }
+.wfp-status-completed { background: #d4edda; color: #155724; }
+.wfp-status-todo { background: #e2e3e5; color: #383d41; }
+.wfp-status-in_progress { background: #cce7ff; color: #004085; }
+.wfp-status-review { background: #fff3cd; color: #856404; }
+
+/* Time Tracking Interface */
+.wfp-time-tracking-interface {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.wfp-time-controls {
+    margin-bottom: 40px;
+}
+
+.wfp-current-status {
+    margin-bottom: 30px;
+}
+
+.wfp-status-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+}
+
+.wfp-status-card.wfp-status-active {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-color: #b8daff;
+}
+
+.wfp-status-card.wfp-status-inactive {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.wfp-status-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.wfp-status-details {
+    flex: 1;
+    margin-left: 15px;
+}
+
+.wfp-status-details strong {
+    font-size: 20px;
+    color: #2c3e50;
+}
+
+.wfp-status-details p {
+    margin: 5px 0 0 0;
+    color: #6c757d;
+}
+
+.wfp-status-actions {
+    text-align: center;
+}
+
+/* Time Summary */
+.wfp-time-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+}
+
+.wfp-summary-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    border: 1px solid #e9ecef;
+}
+
+.wfp-summary-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.wfp-summary-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 8px;
+}
+
+.wfp-summary-label {
+    font-size: 14px;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Projects Interface */
+.wfp-projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.wfp-project-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.wfp-project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.wfp-project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.wfp-project-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+    flex: 1;
+}
+
+.wfp-project-code {
+    font-size: 12px;
+    background: #e9ecef;
+    color: #495057;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.wfp-project-body {
+    margin-bottom: 20px;
+}
+
+.wfp-project-description {
+    color: #6c757d;
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.wfp-project-meta {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.wfp-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.wfp-meta-label {
+    font-size: 12px;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wfp-meta-value {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.wfp-project-actions {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Tasks Grid */
+.wfp-tasks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.wfp-task-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+    transition: transform 0.3s ease;
+}
+
+.wfp-task-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.wfp-task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.wfp-task-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    flex: 1;
+}
+
+.wfp-task-body {
+    margin-bottom: 15px;
+}
+
+.wfp-task-project {
+    font-size: 14px;
+    color: #667eea;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.wfp-task-description {
+    color: #6c757d;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.wfp-task-due-date {
+    font-size: 12px;
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+.wfp-task-actions {
+    text-align: center;
+}
+
+/* Buttons */
+.wfp-btn {
+    display: inline-block;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    line-height: 1;
+}
+
+.wfp-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.wfp-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    text-decoration: none;
+    color: #fff;
+}
+
+.wfp-btn-secondary {
+    background: #f8f9fa;
+    color: #495057;
+    border: 1px solid #e9ecef;
+}
+
+.wfp-btn-secondary:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: #495057;
+}
+
+.wfp-btn-large {
+    padding: 16px 30px;
+    font-size: 16px;
+}
+
+.wfp-btn-sm {
+    padding: 8px 16px;
+    font-size: 12px;
+}
+
+.wfp-btn-block {
+    width: 100%;
+}
+
+/* Profile Interface */
+.wfp-profile-interface {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.wfp-profile-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+}
+
+.wfp-profile-section h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: #2c3e50;
+    font-weight: 700;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 15px;
+}
+
+.wfp-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.wfp-profile-avatar img {
+    border-radius: 50%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.wfp-profile-info h3 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    font-size: 24px;
+}
+
+.wfp-profile-email {
+    color: #6c757d;
+    margin-bottom: 15px;
+}
+
+.wfp-profile-details {
+    display: grid;
+    gap: 10px;
+}
+
+.wfp-detail-item {
+    display: flex;
+    gap: 10px;
+}
+
+.wfp-detail-label {
+    font-weight: 600;
+    color: #2c3e50;
+    min-width: 120px;
+}
+
+.wfp-detail-value {
+    color: #495057;
+}
+
+/* Leave Balance */
+.wfp-leave-balance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.wfp-leave-balance-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+}
+
+.wfp-leave-type {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wfp-leave-remaining {
+    font-size: 32px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 5px;
+}
+
+.wfp-leave-total,
+.wfp-leave-used {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* Quick Actions */
+.wfp-quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.wfp-quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    background: #fff;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #495057;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.wfp-quick-action-btn:hover {
+    background: #667eea;
+    color: #fff;
+    border-color: #667eea;
+    transform: translateY(-3px);
+    text-decoration: none;
+}
+
+.wfp-quick-action-btn .dashicons {
+    font-size: 24px;
+}
+
+/* Forms */
+.wfp-form {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+}
+
+.wfp-form-group {
+    margin-bottom: 25px;
+}
+
+.wfp-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.wfp-form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    background: #fff;
+}
+
+.wfp-form-control:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.wfp-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.wfp-form-actions {
+    margin-top: 30px;
+    text-align: center;
+}
+
+/* Modals */
+.wfp-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.wfp-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.wfp-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px;
+    border-bottom: 1px solid #e9ecef;
+    background: #f8f9fa;
+    border-radius: 12px 12px 0 0;
+}
+
+.wfp-modal-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.wfp-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+}
+
+.wfp-modal-close:hover {
+    background: #e9ecef;
+}
+
+.wfp-modal-body {
+    padding: 25px;
+}
+
+.wfp-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    padding: 25px;
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+}
+
+/* Shortcodes */
+.wfp-shortcode-dashboard,
+.wfp-shortcode-time-tracker,
+.wfp-shortcode-project-list,
+.wfp-shortcode-leave-form,
+.wfp-shortcode-profile {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+    margin-bottom: 30px;
+}
+
+.wfp-no-data,
+.wfp-no-projects {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.wfp-login-required {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    color: #856404;
+}
+
+.wfp-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    color: #721c24;
+}
+
+.wfp-info {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    color: #0c5460;
+}
+
+/* Animations */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.wfp-widget,
+.wfp-project-card,
+.wfp-task-card {
+    animation: fadeIn 0.6s ease forwards;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wfp-nav-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .wfp-nav-menu {
+        flex-direction: column;
+    }
+    
+    .wfp-nav-item {
+        min-width: auto;
+    }
+    
+    .wfp-widget-row,
+    .wfp-projects-grid,
+    .wfp-tasks-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .wfp-time-summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .wfp-profile-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .wfp-form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .wfp-leave-balance-grid,
+    .wfp-quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .wfp-modal-content {
+        width: 95%;
+        margin: 20px;
+    }
+    
+    .wfp-page-title {
+        font-size: 24px;
+    }
+}

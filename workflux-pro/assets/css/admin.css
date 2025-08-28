@@ -1,0 +1,612 @@
+/**
+ * WorkFlux Pro Admin Styles
+ * 
+ * @package WorkFluxPro
+ * @since 1.0.0
+ */
+
+/* Admin Header */
+.wfp-admin-header {
+    background: #fff;
+    border-bottom: 1px solid #e1e1e1;
+    padding: 20px 0;
+    margin: 0 -20px 20px -20px;
+}
+
+.wfp-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.wfp-header-title h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #23282d;
+}
+
+.wfp-header-title .description {
+    margin: 5px 0 0 0;
+    color: #666;
+}
+
+.wfp-header-user {
+    display: flex;
+    align-items: center;
+}
+
+.wfp-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wfp-user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.wfp-user-name {
+    font-weight: 600;
+    color: #23282d;
+}
+
+.wfp-user-role {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Dashboard Widgets */
+.wfp-dashboard-widgets {
+    margin-bottom: 30px;
+}
+
+.wfp-widget-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.wfp-widget {
+    background: #fff;
+    border: 1px solid #e1e1e1;
+    border-radius: 6px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.wfp-widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.wfp-widget-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #23282d;
+}
+
+.wfp-widget-icon {
+    font-size: 20px;
+    color: #0073aa;
+}
+
+.wfp-widget-content {
+    text-align: center;
+}
+
+.wfp-widget-number {
+    display: block;
+    font-size: 32px;
+    font-weight: 600;
+    color: #0073aa;
+    margin-bottom: 5px;
+}
+
+.wfp-widget-number.wfp-number-success { color: #46b450; }
+.wfp-widget-number.wfp-number-warning { color: #ffb900; }
+.wfp-widget-number.wfp-number-error { color: #dc3232; }
+.wfp-widget-number.wfp-number-secondary { color: #666; }
+
+.wfp-widget-label {
+    font-size: 14px;
+    color: #666;
+}
+
+.wfp-widget-link {
+    color: #0073aa;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.wfp-widget-link:hover {
+    text-decoration: underline;
+}
+
+/* Status Badges */
+.wfp-status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wfp-status-success { background: #d4edda; color: #155724; }
+.wfp-status-warning { background: #fff3cd; color: #856404; }
+.wfp-status-error { background: #f8d7da; color: #721c24; }
+.wfp-status-info { background: #d1ecf1; color: #0c5460; }
+.wfp-status-secondary { background: #f8f9fa; color: #6c757d; }
+
+.wfp-status-active { background: #d4edda; color: #155724; }
+.wfp-status-inactive { background: #f8f9fa; color: #6c757d; }
+.wfp-status-pending { background: #fff3cd; color: #856404; }
+.wfp-status-approved { background: #d4edda; color: #155724; }
+.wfp-status-rejected { background: #f8d7da; color: #721c24; }
+.wfp-status-completed { background: #d4edda; color: #155724; }
+.wfp-status-cancelled { background: #f8d7da; color: #721c24; }
+
+/* Data Tables */
+.wfp-table-wrapper {
+    background: #fff;
+    border: 1px solid #e1e1e1;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.wfp-table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e1e1e1;
+    background: #f8f9fa;
+}
+
+.wfp-table-search input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 250px;
+}
+
+.wfp-data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.wfp-data-table th,
+.wfp-data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e1e1e1;
+}
+
+.wfp-data-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #23282d;
+}
+
+.wfp-data-table tr:hover {
+    background: #f8f9fa;
+}
+
+.wfp-actions-column {
+    width: 150px;
+    text-align: center;
+}
+
+.wfp-no-data td {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 30px;
+}
+
+/* Forms */
+.wfp-form {
+    background: #fff;
+    border: 1px solid #e1e1e1;
+    border-radius: 6px;
+    padding: 20px;
+}
+
+.wfp-form-group {
+    margin-bottom: 20px;
+}
+
+.wfp-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #23282d;
+}
+
+.wfp-form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.wfp-form-control:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+    outline: none;
+}
+
+.wfp-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.wfp-form-actions {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e1e1e1;
+}
+
+/* Buttons */
+.wfp-btn {
+    display: inline-block;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.wfp-btn-primary {
+    background: #0073aa;
+    color: #fff;
+    border-color: #0073aa;
+}
+
+.wfp-btn-primary:hover {
+    background: #005a87;
+    border-color: #005a87;
+}
+
+.wfp-btn-secondary {
+    background: #f8f9fa;
+    color: #23282d;
+    border-color: #ddd;
+}
+
+.wfp-btn-secondary:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.wfp-btn-success {
+    background: #46b450;
+    color: #fff;
+    border-color: #46b450;
+}
+
+.wfp-btn-danger {
+    background: #dc3232;
+    color: #fff;
+    border-color: #dc3232;
+}
+
+.wfp-btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.wfp-btn-large {
+    padding: 14px 20px;
+    font-size: 16px;
+}
+
+/* Time Tracking */
+.wfp-time-tracking-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.wfp-current-status,
+.wfp-today-summary {
+    background: #fff;
+    border: 1px solid #e1e1e1;
+    border-radius: 6px;
+    padding: 20px;
+}
+
+.wfp-status-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-top: 15px;
+}
+
+.wfp-status-active {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+}
+
+.wfp-status-inactive {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.wfp-status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.wfp-status-indicator.active {
+    background: #28a745;
+    animation: pulse 2s infinite;
+}
+
+.wfp-status-indicator.inactive {
+    background: #6c757d;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.wfp-summary-card {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-top: 15px;
+}
+
+.wfp-summary-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.wfp-summary-value {
+    font-size: 32px;
+    font-weight: 600;
+    color: #0073aa;
+    margin-bottom: 5px;
+}
+
+.wfp-summary-label {
+    font-size: 14px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Recent Activities */
+.wfp-recent-activities {
+    background: #fff;
+    border: 1px solid #e1e1e1;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.wfp-activities-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.wfp-activity-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.wfp-activity-item:last-child {
+    border-bottom: none;
+}
+
+.wfp-activity-icon {
+    margin-right: 15px;
+    color: #0073aa;
+    font-size: 16px;
+}
+
+.wfp-activity-content {
+    flex: 1;
+}
+
+.wfp-activity-description {
+    margin: 0 0 5px 0;
+    color: #23282d;
+}
+
+.wfp-activity-time {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Quick Actions */
+.wfp-quick-actions {
+    background: #fff;
+    border: 1px solid #e1e1e1;
+    border-radius: 6px;
+    padding: 20px;
+}
+
+.wfp-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.wfp-quick-action {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #e1e1e1;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #23282d;
+    transition: all 0.2s ease;
+}
+
+.wfp-quick-action:hover {
+    background: #0073aa;
+    color: #fff;
+    border-color: #0073aa;
+    text-decoration: none;
+}
+
+.wfp-quick-action .dashicons {
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+/* Loading Spinner */
+.wfp-loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.wfp-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #0073aa;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Modals */
+.wfp-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wfp-modal-content {
+    background: #fff;
+    border-radius: 6px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.wfp-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e1e1e1;
+}
+
+.wfp-modal-header h3 {
+    margin: 0;
+    color: #23282d;
+}
+
+.wfp-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wfp-modal-body {
+    padding: 20px;
+}
+
+.wfp-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid #e1e1e1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wfp-header-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .wfp-widget-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .wfp-time-tracking-dashboard {
+        grid-template-columns: 1fr;
+    }
+    
+    .wfp-form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .wfp-actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .wfp-modal-content {
+        width: 95%;
+        margin: 20px;
+    }
+}
+
+/* Admin Footer */
+.wfp-admin-footer {
+    margin-top: 40px;
+    padding: 20px 0;
+    border-top: 1px solid #e1e1e1;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
