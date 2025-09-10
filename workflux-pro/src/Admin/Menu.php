@@ -26,6 +26,17 @@ class Menu
         add_submenu_page('workflux-pro', __('Projects', 'workflux-pro'), __('Projects', 'workflux-pro'), 'wfp_manage_projects', 'wfp-projects', [self::class, 'renderProjects']);
         add_submenu_page('workflux-pro', __('Reports', 'workflux-pro'), __('Reports', 'workflux-pro'), 'wfp_view_reports', 'wfp-reports', [self::class, 'renderReports']);
         add_submenu_page('workflux-pro', __('Settings', 'workflux-pro'), __('Settings', 'workflux-pro'), 'wfp_manage_settings', 'wfp-settings', [self::class, 'renderSettings']);
+
+        // Employee dashboard (hidden from menu for non-employees)
+        add_menu_page(
+            __('My Dashboard', 'workflux-pro'),
+            __('My Dashboard', 'workflux-pro'),
+            'wfp_clock_attendance',
+            'wfp-my-dashboard',
+            [self::class, 'renderEmployeeDashboard'],
+            'dashicons-clipboard',
+            59
+        );
     }
 
     public static function enqueueAdminAssets($hook): void
@@ -76,6 +87,21 @@ class Menu
     public static function renderSettings(): void
     {
         echo '<div class="wrap"><h1>Settings</h1><div id="wfp-admin-settings"></div></div>';
+    }
+
+    public static function renderEmployeeDashboard(): void
+    {
+        // Enqueue frontend assets within admin for this page
+        wp_enqueue_style('wfp-admin');
+        echo '<div class="wrap"><h1>My Dashboard</h1>';
+        echo '<div class="wfp-actions">'
+            . '<button class="wfp-btn" data-action="clock-in">Clock In</button> '
+            . '<button class="wfp-btn" data-action="clock-out">Clock Out</button>'
+            . '</div>';
+        echo '<div class="wfp-log" id="wfp-log"></div>';
+        // Reuse frontend script for actions
+        wp_enqueue_script('wfp-admin');
+        echo '</div>';
     }
 }
 
