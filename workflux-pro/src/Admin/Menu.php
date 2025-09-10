@@ -10,33 +10,53 @@ class Menu
 {
     public static function register(): void
     {
-        add_menu_page(
-            __('WorkFlux Pro', 'workflux-pro'),
-            __('WorkFlux Pro', 'workflux-pro'),
-            'wfp_manage_settings',
-            'workflux-pro',
-            [self::class, 'renderDashboard'],
-            'dashicons-businessperson',
-            58
-        );
+        // Show admin menus only to management-level users
+        if (
+            current_user_can('wfp_manage_settings') ||
+            current_user_can('wfp_manage_projects') ||
+            current_user_can('wfp_manage_employees') ||
+            current_user_can('wfp_approve_leave') ||
+            current_user_can('wfp_view_reports') ||
+            current_user_can('manage_options')
+        ) {
+            add_menu_page(
+                __('WorkFlux Pro', 'workflux-pro'),
+                __('WorkFlux Pro', 'workflux-pro'),
+                'wfp_manage_settings',
+                'workflux-pro',
+                [self::class, 'renderDashboard'],
+                'dashicons-businessperson',
+                58
+            );
 
-        add_submenu_page('workflux-pro', __('Employees', 'workflux-pro'), __('Employees', 'workflux-pro'), 'wfp_manage_employees', 'wfp-employees', [self::class, 'renderEmployees']);
-        add_submenu_page('workflux-pro', __('Attendance', 'workflux-pro'), __('Attendance', 'workflux-pro'), 'wfp_view_reports', 'wfp-attendance', [self::class, 'renderAttendance']);
-        add_submenu_page('workflux-pro', __('Leaves', 'workflux-pro'), __('Leaves', 'workflux-pro'), 'wfp_approve_leave', 'wfp-leaves', [self::class, 'renderLeaves']);
-        add_submenu_page('workflux-pro', __('Projects', 'workflux-pro'), __('Projects', 'workflux-pro'), 'wfp_manage_projects', 'wfp-projects', [self::class, 'renderProjects']);
-        add_submenu_page('workflux-pro', __('Reports', 'workflux-pro'), __('Reports', 'workflux-pro'), 'wfp_view_reports', 'wfp-reports', [self::class, 'renderReports']);
-        add_submenu_page('workflux-pro', __('Settings', 'workflux-pro'), __('Settings', 'workflux-pro'), 'wfp_manage_settings', 'wfp-settings', [self::class, 'renderSettings']);
+            add_submenu_page('workflux-pro', __('Employees', 'workflux-pro'), __('Employees', 'workflux-pro'), 'wfp_manage_employees', 'wfp-employees', [self::class, 'renderEmployees']);
+            add_submenu_page('workflux-pro', __('Attendance', 'workflux-pro'), __('Attendance', 'workflux-pro'), 'wfp_view_reports', 'wfp-attendance', [self::class, 'renderAttendance']);
+            add_submenu_page('workflux-pro', __('Leaves', 'workflux-pro'), __('Leaves', 'workflux-pro'), 'wfp_approve_leave', 'wfp-leaves', [self::class, 'renderLeaves']);
+            add_submenu_page('workflux-pro', __('Projects', 'workflux-pro'), __('Projects', 'workflux-pro'), 'wfp_manage_projects', 'wfp-projects', [self::class, 'renderProjects']);
+            add_submenu_page('workflux-pro', __('Reports', 'workflux-pro'), __('Reports', 'workflux-pro'), 'wfp_view_reports', 'wfp-reports', [self::class, 'renderReports']);
+            add_submenu_page('workflux-pro', __('Settings', 'workflux-pro'), __('Settings', 'workflux-pro'), 'wfp_manage_settings', 'wfp-settings', [self::class, 'renderSettings']);
+        }
 
-        // Employee dashboard (hidden from menu for non-employees)
-        add_menu_page(
-            __('My Dashboard', 'workflux-pro'),
-            __('My Dashboard', 'workflux-pro'),
-            'wfp_clock_attendance',
-            'wfp-my-dashboard',
-            [self::class, 'renderEmployeeDashboard'],
-            'dashicons-clipboard',
-            59
-        );
+        // Employee dashboard: only for users who are employees (no management caps)
+        if (
+            current_user_can('wfp_clock_attendance') &&
+            !current_user_can('wfp_manage_settings') &&
+            !current_user_can('manage_options') &&
+            !current_user_can('wfp_manage_projects') &&
+            !current_user_can('wfp_manage_employees') &&
+            !current_user_can('wfp_approve_leave') &&
+            !current_user_can('wfp_view_reports')
+        ) {
+            add_menu_page(
+                __('My Dashboard', 'workflux-pro'),
+                __('My Dashboard', 'workflux-pro'),
+                'wfp_clock_attendance',
+                'wfp-my-dashboard',
+                [self::class, 'renderEmployeeDashboard'],
+                'dashicons-clipboard',
+                59
+            );
+        }
     }
 
     public static function enqueueAdminAssets($hook): void
