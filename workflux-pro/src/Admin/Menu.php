@@ -91,7 +91,22 @@ class Menu
 
     public static function renderLeaves(): void
     {
-        echo '<div class="wrap"><h1>Leaves</h1><div id="wfp-admin-leaves"></div></div>';
+        echo '<div class="wrap"><h1>Leaves</h1>';
+        if (current_user_can('wfp_approve_leave')) {
+            echo '<h2>Pending Approvals</h2>';
+            echo '<table class="widefat fixed striped"><thead><tr><th>Employee</th><th>Type</th><th>Dates</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead><tbody id="wfp-leaves-body"><tr><td colspan="6">Loading...</td></tr></tbody></table>';
+        } else {
+            echo '<h2>My Leave Requests</h2>';
+            echo '<form id="wfp-leave-form" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap">'
+               + '<input type="text" name="type" placeholder="Type (e.g., Casual)" required />'
+               + '<input type="date" name="start_date" required />'
+               + '<input type="date" name="end_date" required />'
+               + '<input type="text" name="reason" placeholder="Reason (optional)" />'
+               + '<button class="button button-primary" type="submit">Submit</button>'
+               + '</form>';
+            echo '<table class="widefat fixed striped"><thead><tr><th>Type</th><th>Dates</th><th>Reason</th><th>Status</th></tr></thead><tbody id="wfp-my-leaves-body"><tr><td colspan="4">Loading...</td></tr></tbody></table>';
+        }
+        echo '</div>';
     }
 
     public static function renderProjects(): void
@@ -119,6 +134,8 @@ class Menu
             . '<button class="wfp-btn" data-action="clock-out">Clock Out</button>'
             . '</div>';
         echo '<div class="wfp-log" id="wfp-log"></div>';
+        echo '<h2>My Attendance</h2>';
+        echo '<table class="widefat fixed striped"><thead><tr><th>Date In</th><th>Date Out</th><th>Activity</th></tr></thead><tbody id="wfp-attendance-body"><tr><td colspan="3">Loading...</td></tr></tbody></table>';
         // Reuse frontend script for actions
         wp_enqueue_script('wfp-admin');
         echo '</div>';
