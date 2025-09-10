@@ -1,0 +1,177 @@
+<?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
+/**
+ * Minimal PWA features: manifest JSON, service worker, registration, and install banner.
+ */
+class SHP_PWA {
+
+    const OPTION_KEY = 'shp_pwa_options';
+
+    public function __construct() {
+        add_action( 'init', array( __CLASS__, 'register_rewrites' ) );
+        add_action( 'template_redirect', array( $this, 'maybe_output_special_files' ) );
+
+        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend' ) );
+        add_action( 'wp_head', array( $this, 'inject_manifest_link' ) );
+
+        // Basic settings API for storing name/colors used by manifest
+        add_action( 'admin_init', array( $this, 'register_settings' ) );
+    }
+
+    /**
+     * Add rewrites for manifest.json and service-worker.js under site root.
+     */
+    public static function register_rewrites() {
+        add_rewrite_rule( '^manifest\.json$', 'index.php?shp_manifest=1', 'top' );
+        add_rewrite_rule( '^service-worker\.js$', 'index.php?shp_sw=1', 'top' );
+        add_rewrite_tag( '%shp_manifest%', '1' );
+        add_rewrite_tag( '%shp_sw%', '1' );
+    }
+
+    /**
+     * Register settings used by the manifest.
+     */
+    public function register_settings() {
+        register_setting( 'reading', self::OPTION_KEY );
+        add_settings_field(
+            'shp_pwa_name',
+            __( 'PWA App Name', 'sh-progressify' ),
+            function() {
+                $opts = get_option( self::OPTION_KEY, array() );
+                $val  = isset( $opts['name'] ) ? $opts['name'] : 'SH Progressify – Sri Hayavadhana';
+                echo '<input type="text" name="' . esc_attr( self::OPTION_KEY ) . '[name]" value="' . esc_attr( $val ) . '" class="regular-text" />';
+            },
+            'reading'
+        );
+        add_settings_field(
+            'shp_pwa_theme',
+            __( 'PWA Theme Color', 'sh-progressify' ),
+            function() {
+                $opts = get_option( self::OPTION_KEY, array() );
+                $val  = isset( $opts['theme_color'] ) ? $opts['theme_color'] : '#0B6E4F';
+                echo '<input type="text" name="' . esc_attr( self::OPTION_KEY ) . '[theme_color]" value="' . esc_attr( $val ) . '" class="regular-text" placeholder="#0B6E4F" />';
+            },
+            'reading'
+        );
+        add_settings_field(
+            'shp_pwa_bg',
+            __( 'PWA Background Color', 'sh-progressify' ),
+            function() {
+                $opts = get_option( self::OPTION_KEY, array() );
+                $val  = isset( $opts['background_color'] ) ? $opts['background_color'] : '#ffffff';
+                echo '<input type="text" name="' . esc_attr( self::OPTION_KEY ) . '[background_color]" value="' . esc_attr( $val ) . '" class="regular-text" placeholder="#ffffff" />';
+            },
+            'reading'
+        );
+    }
+
+    /**
+     * Serve manifest.json or service-worker.js when the rewrite query vars are present.
+     */
+    public function maybe_output_special_files() {
+        if ( get_query_var( 'shp_manifest' ) ) {
+            $this->output_manifest();
+            exit;
+        }
+        if ( get_query_var( 'shp_sw' ) ) {
+            $this->output_service_worker();
+            exit;
+        }
+    }
+
+    private function output_manifest() {
+        $opts = get_option( self::OPTION_KEY, array() );
+        $name = isset( $opts['name'] ) ? $opts['name'] : 'SH Progressify – Sri Hayavadhana';
+        $theme = isset( $opts['theme_color'] ) ? $opts['theme_color'] : '#0B6E4F';
+        $bg = isset( $opts['background_color'] ) ? $opts['background_color'] : '#ffffff';
+
+        $manifest = array(
+            'name' => $name,
+            'short_name' => 'Sri Hayavadhana',
+            'start_url' => '/',
+            'scope' => '/',
+            'display' => 'standalone',
+            'background_color' => $bg,
+            'theme_color' => $theme,
+            'icons' => array(
+                array(
+                    'src' => esc_url_raw( SHP_PLUGIN_URL . 'assets/logo-192.png' ),
+                    'sizes' => '192x192',
+                    'type' => 'image/png'
+                ),
+                array(
+                    'src' => esc_url_raw( SHP_PLUGIN_URL . 'assets/logo-512.png' ),
+                    'sizes' => '512x512',
+                    'type' => 'image/png',
+                    'purpose' => 'any maskable'
+                ),
+            )
+        );
+
+        nocache_headers();
+        header( 'Content-Type: application/manifest+json; charset=utf-8' );
+        echo wp_json_encode( $manifest, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+    }
+
+    private function output_service_worker() {
+        nocache_headers();
+        header( 'Content-Type: application/javascript; charset=utf-8' );
+        $cacheName = 'shp-offline-v1';
+        $offlineUrls = array( home_url( '/' ) );
+        ?>
+// Minimal offline SW generated by SH Progressify
+const CACHE_NAME = '<?php echo esc_js( $cacheName ); ?>';
+const OFFLINE_URLS = <?php echo wp_json_encode( $offlineUrls ); ?>;
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(OFFLINE_URLS))
+  );
+});
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME ? caches.delete(k) : null)))
+  );
+});
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  event.respondWith(
+    fetch(req).then(res => {
+      const resClone = res.clone();
+      caches.open(CACHE_NAME).then(cache => cache.put(req, resClone));
+      return res;
+    }).catch(() => caches.match(req).then(r => r || caches.match('/')))
+  );
+});
+        <?php
+    }
+
+    /**
+     * Enqueue public registration and banner styles.
+     */
+    public function enqueue_frontend() {
+        // Register service worker only on front-end and over HTTPS
+        if ( is_admin() ) return;
+        wp_enqueue_script( 'shp-public', SHP_PLUGIN_URL . 'public/register.js', array(), '0.1.0', true );
+        wp_add_inline_style( 'wp-block-library', '.shp-install-banner{position:fixed;left:16px;right:16px;bottom:16px;background:#111827;color:#fff;padding:12px 14px;border-radius:12px;display:none;z-index:9999}.shp-install-banner button{margin-left:8px}' );
+        wp_localize_script( 'shp-public', 'SHP_PWA', array(
+            'manifestUrl' => home_url( '/manifest.json' ),
+            'swUrl' => home_url( '/service-worker.js' ),
+        ) );
+    }
+
+    /**
+     * Add link tag for manifest in <head>.
+     */
+    public function inject_manifest_link() {
+        echo '<link rel="manifest" href="' . esc_url( home_url( '/manifest.json' ) ) . '" />' . "\n";
+        $opts = get_option( self::OPTION_KEY, array() );
+        $theme = isset( $opts['theme_color'] ) ? $opts['theme_color'] : '#0B6E4F';
+        echo '<meta name="theme-color" content="' . esc_attr( $theme ) . '" />' . "\n";
+    }
+}
+

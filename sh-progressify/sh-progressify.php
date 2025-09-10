@@ -20,6 +20,7 @@ define( 'SHP_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 // Autoload includes if needed in future
 require_once SHP_PLUGIN_DIR . 'includes/class-shp-admin.php';
+require_once SHP_PLUGIN_DIR . 'includes/class-shp-pwa.php';
 
 /**
  * Bootstrap the plugin.
@@ -27,6 +28,7 @@ require_once SHP_PLUGIN_DIR . 'includes/class-shp-admin.php';
 function shp_bootstrap_plugin() {
     // Initialize admin UI/controller.
     new SHP_Admin();
+    new SHP_PWA();
 }
 add_action( 'plugins_loaded', 'shp_bootstrap_plugin' );
 
@@ -34,7 +36,11 @@ add_action( 'plugins_loaded', 'shp_bootstrap_plugin' );
  * Basic activation hook (reserved for future use such as capabilities/rewrite).
  */
 function shp_on_activation() {
-    // Placeholder for activation tasks.
+    // Register rewrite rules first, then flush.
+    if ( class_exists( 'SHP_PWA' ) ) {
+        SHP_PWA::register_rewrites();
+    }
+    flush_rewrite_rules();
 }
 register_activation_hook( __FILE__, 'shp_on_activation' );
 
@@ -42,7 +48,7 @@ register_activation_hook( __FILE__, 'shp_on_activation' );
  * Basic deactivation hook.
  */
 function shp_on_deactivation() {
-    // Placeholder for deactivation tasks.
+    flush_rewrite_rules();
 }
 register_deactivation_hook( __FILE__, 'shp_on_deactivation' );
 
