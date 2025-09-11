@@ -101,11 +101,15 @@
 .sh-timeline .sh-tl-image { margin: 6px 0 10px; }
 .sh-timeline .sh-tl-image img { display: block; max-width: 100%; height: auto; border-radius: 8px; }
 
-/* gallery */
-.sh-timeline .sh-tl-gallery { position: relative; overflow: hidden; border-radius: 8px; margin: 8px 0 12px; }
-.sh-timeline .sh-tl-slide { position: absolute; inset: 0; opacity: 0; transition: opacity .4s ease; }
-.sh-timeline .sh-tl-slide img { width: 100%; height: auto; display: block; }
-.sh-timeline .sh-tl-slide.is-active { position: relative; opacity: 1; }
+/* gallery (shared for shortcode + CPT) */
+.sh-timeline .sh-tl-gallery,
+.sh-ct .sh-tl-gallery { position: relative; overflow: hidden; border-radius: 8px; margin: 8px 0 12px; }
+.sh-timeline .sh-tl-slide,
+.sh-ct .sh-tl-slide { position: absolute; inset: 0; opacity: 0; transition: opacity .4s ease; }
+.sh-timeline .sh-tl-slide img,
+.sh-ct .sh-tl-slide img { width: 100%; height: auto; display: block; }
+.sh-timeline .sh-tl-slide.is-active,
+.sh-ct .sh-tl-slide.is-active { position: relative; opacity: 1; }
 
 /* subtle hover */
 .sh-timeline .sh-tl-card { transition: transform .18s ease, box-shadow .18s ease; }

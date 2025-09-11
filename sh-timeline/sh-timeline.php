@@ -329,6 +329,12 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                         'value'       => $series_options,
                         'description' => __( 'Choose a series to display. Leave empty to show all.', 'sh-timeline' ),
                     ),
+                    array(
+                        'type'        => 'textfield',
+                        'heading'     => __( 'Autoplay Interval (ms)', 'sh-timeline' ),
+                        'param_name'  => 'autoplay_ms',
+                        'description' => __( 'Controls gallery auto-rotation speed. Default 3500.', 'sh-timeline' ),
+                    ),
                 ),
             ) );
         }
@@ -459,7 +465,8 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
          */
         public function render_construction_timeline( $atts ) {
             $atts = shortcode_atts( array(
-                'series' => '',
+                'series'      => '',
+                'autoplay_ms' => '3500',
             ), $atts, 'construction_timeline' );
 
             $args = array(
@@ -495,6 +502,11 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
             wp_enqueue_style( 'sh-timeline-style' );
             wp_enqueue_script( 'sh-timeline-inview' );
             wp_enqueue_script( 'sh-timeline-slider' );
+
+            $interval_ms = intval( $atts['autoplay_ms'] );
+            if ( $interval_ms < 500 ) {
+                $interval_ms = 2000;
+            }
 
             ob_start();
             echo '<section class="sh-ct" aria-label="Construction Timeline">';
@@ -567,7 +579,7 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
 
                 // Render gallery first if available
                 if ( ! empty( $gallery_ids_arr ) || ! empty( $gallery_urls_arr ) ) {
-                    echo '<div class="sh-tl-gallery" data-autoplay="1" data-interval="3500">';
+                    echo '<div class="sh-tl-gallery" data-autoplay="1" data-interval="' . esc_attr( (string) $interval_ms ) . '">';
                     foreach ( $gallery_ids_arr as $gid ) {
                         $gsrc = wp_get_attachment_image_src( $gid, 'large' );
                         if ( $gsrc && is_array( $gsrc ) ) {
