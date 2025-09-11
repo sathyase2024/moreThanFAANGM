@@ -95,66 +95,10 @@
       if(e.target.matches('.constructo-floor')){ renderBuiltupInputs(); recalc(); }
     });
     var openBtn = container.querySelector('.constructo-button');
-    var modal = container.querySelector('.constructo-modal');
-    var closeBtn = container.querySelector('.constructo-modal__close');
-    var form = container.querySelector('.constructo-form');
-
-    function syncTotalToForm(){
-      var totalEl = container.querySelector('[data-total]');
-      var raw = totalEl?.textContent || '0';
-      var num = parseFloat((raw || '0').replace(/[^0-9.]/g, '')) || 0;
-      if(form){
-        var disp = form.querySelector('input[name="estimated_total_display"]');
-        var hidden = form.querySelector('input[name="estimated_total"]');
-        if(disp){ disp.value = raw; }
-        if(hidden){ hidden.value = num; }
-      }
-    }
-
-    if(openBtn && modal){
+    if(openBtn){
       openBtn.addEventListener('click', function(e){
         e.preventDefault();
-        syncTotalToForm();
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('constructo-no-scroll');
-      });
-    }
-    if(closeBtn && modal){
-      closeBtn.addEventListener('click', function(){
-        modal.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('constructo-no-scroll');
-      });
-      modal.addEventListener('click', function(e){
-        if(e.target === modal){
-          modal.setAttribute('aria-hidden', 'true');
-          document.body.classList.remove('constructo-no-scroll');
-        }
-      });
-    }
-
-    if(form){
-      form.addEventListener('submit', function(e){
-        e.preventDefault();
-        syncTotalToForm();
-        var status = form.querySelector('.constructo-form__status');
-        if(status){ status.textContent = 'Sending...'; }
-        var fd = new FormData(form);
-        fd.append('action', 'construction_calc_submit');
-        fd.append('nonce', (window.CONSTRUCTION_CALC && window.CONSTRUCTION_CALC.ajax && window.CONSTRUCTION_CALC.ajax.nonce) || '');
-        fetch((window.CONSTRUCTION_CALC && window.CONSTRUCTION_CALC.ajax && window.CONSTRUCTION_CALC.ajax.url) || '', {
-          method: 'POST',
-          credentials: 'same-origin',
-          body: fd
-        }).then(function(r){ return r.json(); }).then(function(res){
-          if(res && res.success){
-            if(status){ status.textContent = res.data && res.data.message ? res.data.message : 'Sent!'; }
-            form.reset();
-          } else {
-            if(status){ status.textContent = (res && res.data && res.data.message) ? res.data.message : 'Failed. Please try again.'; }
-          }
-        }).catch(function(){
-          if(status){ status.textContent = 'Network error. Please try later.'; }
-        });
+        alert('Thanks! We will contact you soon.');
       });
     }
     renderBuiltupInputs();

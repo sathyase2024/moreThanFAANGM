@@ -22,8 +22,7 @@ class Construction_Cost_Calculator {
         add_shortcode('construction_calculator', [$this, 'render_shortcode']);
         // Backward-compatible alias
         add_shortcode('constructo_calculator', [$this, 'render_shortcode']);
-        add_action('wp_ajax_construction_calc_submit', [$this, 'handle_form_submit']);
-        add_action('wp_ajax_nopriv_construction_calc_submit', [$this, 'handle_form_submit']);
+        // Contact form removed per request
         if (is_admin()) {
             add_action('admin_menu', [$this, 'add_settings_page']);
             add_action('admin_init', [$this, 'register_settings']);
@@ -119,10 +118,6 @@ class Construction_Cost_Calculator {
             'packages' => $packages,
             'rates' => $rates,
             'currency' => 'Rs.',
-            'ajax' => [
-                'url' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('construction_calc'),
-            ],
         ]);
 
         ob_start();
@@ -193,39 +188,6 @@ class Construction_Cost_Calculator {
 
             <div class="constructo-cta">
                 <a href="#" class="constructo-button"><?php echo esc_html__('GET FREE ESTIMATE NOW'); ?></a>
-            </div>
-            <div class="constructo-modal" aria-hidden="true" role="dialog">
-                <div class="constructo-modal__dialog">
-                    <button class="constructo-modal__close" aria-label="Close">×</button>
-                    <h3><?php echo esc_html__('Request Your Free Estimate'); ?></h3>
-                    <form class="constructo-form" novalidate>
-                        <div class="form-grid">
-                            <label>
-                                <span><?php echo esc_html__('Name'); ?></span>
-                                <input type="text" name="name" required />
-                            </label>
-                            <label>
-                                <span><?php echo esc_html__('Phone'); ?></span>
-                                <input type="tel" name="phone" required />
-                            </label>
-                            <label>
-                                <span><?php echo esc_html__('Email'); ?></span>
-                                <input type="email" name="email" />
-                            </label>
-                            <label class="full">
-                                <span><?php echo esc_html__('Message'); ?></span>
-                                <textarea name="message" rows="3" placeholder="Project details"></textarea>
-                            </label>
-                            <label class="full readonly">
-                                <span><?php echo esc_html__('Estimated Total'); ?></span>
-                                <input type="text" name="estimated_total_display" readonly />
-                            </label>
-                        </div>
-                        <input type="hidden" name="estimated_total" value="0" />
-                        <button type="submit" class="constructo-submit"><?php echo esc_html__('Submit'); ?></button>
-                        <p class="constructo-form__status" aria-live="polite"></p>
-                    </form>
-                </div>
             </div>
         </div>
         <?php
@@ -339,41 +301,6 @@ class Construction_Cost_Calculator {
         echo '</div>';
     }
 
-    public function handle_form_submit() {
-        check_ajax_referer('construction_calc', 'nonce');
-
-        $name = isset($_POST['name']) ? sanitize_text_field(wp_unslash($_POST['name'])) : '';
-        $phone = isset($_POST['phone']) ? sanitize_text_field(wp_unslash($_POST['phone'])) : '';
-        $email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
-        $message = isset($_POST['message']) ? sanitize_textarea_field(wp_unslash($_POST['message'])) : '';
-        $total = isset($_POST['estimated_total']) ? floatval($_POST['estimated_total']) : 0;
-
-        if (empty($name) || empty($phone)) {
-            wp_send_json_error(['message' => __('Please provide name and phone.')]);
-        }
-
-        $admin_email = get_option('admin_email');
-        $subject = sprintf(__('New Construction Estimate Request - %s'), $name);
-        $body_lines = [
-            'Name: ' . $name,
-            'Phone: ' . $phone,
-            'Email: ' . $email,
-            'Estimated Total: Rs. ' . number_format_i18n($total),
-            'Message:',
-            $message,
-        ];
-        $body = implode("\n", $body_lines);
-        $headers = [];
-        if (!empty($email)) {
-            $headers[] = 'Reply-To: ' . $email;
-        }
-
-        $sent = wp_mail($admin_email, $subject, $body, $headers);
-        if ($sent) {
-            wp_send_json_success(['message' => __('Thanks! We will contact you shortly.')]);
-        }
-        wp_send_json_error(['message' => __('Unable to send at the moment. Please try again later.')]);
-    }
 }
 
 new Construction_Cost_Calculator();
