@@ -1,9 +1,10 @@
 === SH Timeline (WPBakery + Shortcode) ===
-Contributors: your-name
+Contributors: nagarajarao
 Tags: timeline, wpbakery, visual composer, shortcode
 Requires at least: 5.2
 Tested up to: 6.6
 Stable tag: 1.0.0
+Author URI: https://srihayavadhana.com
 License: GPLv2 or later
 
 Alternating vertical timeline (Deejos-like). Provides a [sh_timeline] shortcode and a WPBakery element with param group for items.

@@ -3,7 +3,8 @@
  * Plugin Name: SH Timeline (WPBakery + Shortcode)
  * Description: Alternating vertical timeline (Deejos-like) with shortcode [sh_timeline] and a WPBakery element.
  * Version: 1.0.0
- * Author: Your Name
+ * Author: nagarajarao
+ * Author URI: https://srihayavadhana.com
  * License: GPL-2.0-or-later
  * Text Domain: sh-timeline
  */
