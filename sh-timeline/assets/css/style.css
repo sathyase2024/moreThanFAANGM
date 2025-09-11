@@ -124,13 +124,13 @@
 .sh-ct-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #e5e7eb; transform: translateX(-1px); z-index: 0; }
 .sh-ct-item { position: relative; margin: 40px 0; opacity: 0; transform: translateY(10px); transition: opacity .4s ease, transform .4s ease; }
 .sh-ct-item.is-visible { opacity: 1; transform: none; }
-.sh-ct-card { position: relative; width: calc(50% - 48px); z-index: 1; }
-.sh-ct-header { display: inline-flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.08); background: #f4c542; }
+.sh-ct-card { position: relative; width: calc(50% - 64px); max-width: 600px; z-index: 1; }
+.sh-ct-header { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.08); background: #f4c542; width: 100%; box-sizing: border-box; }
 .sh-ct-step { display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 6px; font-weight: 800; font-size: 18px; background: #333; color: #fff; }
 .sh-ct-title { margin: 0; font-weight: 700; }
-.sh-ct-figure { margin: 10px 0; }
+.sh-ct-figure { margin: 10px 0; width: 100%; box-sizing: border-box; }
 .sh-ct-figure img { display: block; width: 100%; height: auto; border-radius: 8px; }
-.sh-ct-text { color: #374151; line-height: 1.6; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; box-shadow: 0 8px 20px rgba(0,0,0,.06); }
+.sh-ct-text { color: #374151; line-height: 1.6; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; box-shadow: 0 8px 20px rgba(0,0,0,.06); width: 100%; box-sizing: border-box; }
 
 .sh-ct-item--odd .sh-ct-card { margin-right: auto; margin-left: 0; }
 .sh-ct-item--even .sh-ct-card { margin-left: auto; margin-right: 0; }
