@@ -1,19 +1,19 @@
 <?php
 /**
- * Plugin Name: Deejos Timeline (WPBakery + Shortcode)
- * Description: Deejos-style alternating vertical timeline with shortcode [deejos_timeline] and a WPBakery element.
+ * Plugin Name: SH Timeline (WPBakery + Shortcode)
+ * Description: Alternating vertical timeline (Deejos-like) with shortcode [sh_timeline] and a WPBakery element.
  * Version: 1.0.0
  * Author: Your Name
  * License: GPL-2.0-or-later
- * Text Domain: deejos-timeline
+ * Text Domain: sh-timeline
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-if ( ! class_exists( 'Deejos_Timeline_Plugin' ) ) {
-    class Deejos_Timeline_Plugin {
+if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
+    class Sh_Timeline_Plugin {
         const VERSION = '1.0.0';
 
         public function __construct() {
@@ -28,7 +28,7 @@ if ( ! class_exists( 'Deejos_Timeline_Plugin' ) ) {
 
         public function register_assets() {
             wp_register_style(
-                'deejos-timeline-style',
+                'sh-timeline-style',
                 $this->plugin_url() . 'assets/css/style.css',
                 array(),
                 self::VERSION
@@ -36,7 +36,7 @@ if ( ! class_exists( 'Deejos_Timeline_Plugin' ) ) {
         }
 
         public function register_shortcode() {
-            add_shortcode( 'deejos_timeline', array( $this, 'render_shortcode' ) );
+            add_shortcode( 'sh_timeline', array( $this, 'render_shortcode' ) );
         }
 
         /**
@@ -53,7 +53,7 @@ if ( ! class_exists( 'Deejos_Timeline_Plugin' ) ) {
                     'accent_color' => '',
                 ),
                 $atts,
-                'deejos_timeline'
+                'sh_timeline'
             );
 
             // Parse items: support VC param_group and raw JSON.
@@ -77,11 +77,10 @@ if ( ! class_exists( 'Deejos_Timeline_Plugin' ) ) {
             }
 
             if ( empty( $items ) ) {
-                // If no items provided, try to build from inner content shortcodes if any (not implemented for brevity)
                 return '';
             }
 
-            wp_enqueue_style( 'deejos-timeline-style' );
+            wp_enqueue_style( 'sh-timeline-style' );
 
             $accent_style = '';
             if ( ! empty( $atts['accent_color'] ) ) {
@@ -90,8 +89,8 @@ if ( ! class_exists( 'Deejos_Timeline_Plugin' ) ) {
             }
 
             ob_start();
-            echo '<div class="deejos-timeline"' . $accent_style . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-            echo '<div class="dj-tl">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            echo '<div class="sh-timeline"' . $accent_style . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            echo '<div class="sh-tl">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
             $index = 0;
             foreach ( $items as $item ) {
@@ -110,30 +109,29 @@ if ( ! class_exists( 'Deejos_Timeline_Plugin' ) ) {
                         $image_url = $src[0];
                     }
                 } else {
-                    // Could also support direct URL in `image_url`
                     if ( isset( $item['image_url'] ) && ! empty( $item['image_url'] ) ) {
                         $image_url = esc_url_raw( $item['image_url'] );
                     }
                 }
 
-                $side_class = $is_odd ? 'dj-tl-item--odd' : 'dj-tl-item--even';
+                $side_class = $is_odd ? 'sh-tl-item--odd' : 'sh-tl-item--even';
 
-                echo '<div class="dj-tl-item ' . esc_attr( $side_class ) . '">';
-                echo '<span class="dj-tl-dot"></span>';
-                echo '<div class="dj-tl-card">';
+                echo '<div class="sh-tl-item ' . esc_attr( $side_class ) . '">';
+                echo '<span class="sh-tl-dot"></span>';
+                echo '<div class="sh-tl-card">';
 
                 if ( ! empty( $date ) ) {
-                    echo '<div class="dj-tl-date">' . $date . '</div>';
+                    echo '<div class="sh-tl-date">' . $date . '</div>';
                 }
                 if ( ! empty( $image_url ) ) {
                     $alt = ! empty( $title ) ? $title : 'Timeline image';
-                    echo '<div class="dj-tl-image"><img src="' . esc_url( $image_url ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy"></div>';
+                    echo '<div class="sh-tl-image"><img src="' . esc_url( $image_url ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy"></div>';
                 }
                 if ( ! empty( $title ) ) {
-                    echo '<h3 class="dj-tl-title">' . esc_html( $title ) . '</h3>';
+                    echo '<h3 class="sh-tl-title">' . esc_html( $title ) . '</h3>';
                 }
                 if ( ! empty( $text ) ) {
-                    echo '<div class="dj-tl-text">' . $text . '</div>';
+                    echo '<div class="sh-tl-text">' . $text . '</div>';
                 }
 
                 echo '</div>';
@@ -155,47 +153,47 @@ if ( ! class_exists( 'Deejos_Timeline_Plugin' ) ) {
             }
 
             vc_map( array(
-                'name'        => __( 'Deejos Timeline', 'deejos-timeline' ),
-                'base'        => 'deejos_timeline',
+                'name'        => __( 'SH Timeline', 'sh-timeline' ),
+                'base'        => 'sh_timeline',
                 'icon'        => 'dashicons-backup',
-                'category'    => __( 'Content', 'deejos-timeline' ),
-                'description' => __( 'Deejos-style alternating vertical timeline.', 'deejos-timeline' ),
+                'category'    => __( 'Content', 'sh-timeline' ),
+                'description' => __( 'Alternating vertical timeline.', 'sh-timeline' ),
                 'params'      => array(
                     array(
                         'type'        => 'param_group',
-                        'heading'     => __( 'Timeline Items', 'deejos-timeline' ),
+                        'heading'     => __( 'Timeline Items', 'sh-timeline' ),
                         'param_name'  => 'items',
-                        'description' => __( 'Add timeline items.', 'deejos-timeline' ),
+                        'description' => __( 'Add timeline items.', 'sh-timeline' ),
                         'params'      => array(
                             array(
                                 'type'        => 'textfield',
-                                'heading'     => __( 'Date', 'deejos-timeline' ),
+                                'heading'     => __( 'Date', 'sh-timeline' ),
                                 'param_name'  => 'date',
                                 'admin_label' => true,
                             ),
                             array(
                                 'type'        => 'textfield',
-                                'heading'     => __( 'Title', 'deejos-timeline' ),
+                                'heading'     => __( 'Title', 'sh-timeline' ),
                                 'param_name'  => 'title',
                                 'admin_label' => true,
                             ),
                             array(
                                 'type'        => 'textarea',
-                                'heading'     => __( 'Text', 'deejos-timeline' ),
+                                'heading'     => __( 'Text', 'sh-timeline' ),
                                 'param_name'  => 'text',
                             ),
                             array(
                                 'type'        => 'attach_image',
-                                'heading'     => __( 'Image (optional)', 'deejos-timeline' ),
+                                'heading'     => __( 'Image (optional)', 'sh-timeline' ),
                                 'param_name'  => 'image',
                             ),
                         ),
                     ),
                     array(
                         'type'        => 'colorpicker',
-                        'heading'     => __( 'Accent Color', 'deejos-timeline' ),
+                        'heading'     => __( 'Accent Color', 'sh-timeline' ),
                         'param_name'  => 'accent_color',
-                        'description' => __( 'Set the timeline accent color.', 'deejos-timeline' ),
+                        'description' => __( 'Set the timeline accent color.', 'sh-timeline' ),
                     ),
                 ),
             ) );
@@ -203,5 +201,5 @@ if ( ! class_exists( 'Deejos_Timeline_Plugin' ) ) {
     }
 }
 
-new Deejos_Timeline_Plugin();
+new Sh_Timeline_Plugin();
 
