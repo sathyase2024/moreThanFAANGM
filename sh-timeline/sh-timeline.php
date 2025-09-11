@@ -20,6 +20,12 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
             add_action( 'init', array( $this, 'register_shortcode' ) );
             add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
             add_action( 'vc_before_init', array( $this, 'register_vc_element' ) );
+
+            // CPT + Meta + Shortcode for Construction Timeline
+            add_action( 'init', array( $this, 'register_cpt_timeline_step' ) );
+            add_action( 'add_meta_boxes', array( $this, 'register_step_meta_box' ) );
+            add_action( 'save_post', array( $this, 'save_step_meta' ) );
+            add_shortcode( 'construction_timeline', array( $this, 'render_construction_timeline' ) );
         }
 
         public function plugin_url() {
@@ -37,6 +43,13 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                 'sh-timeline-slider',
                 $this->plugin_url() . 'assets/js/slider.js',
                 array('jquery'),
+                self::VERSION,
+                true
+            );
+            wp_register_script(
+                'sh-timeline-inview',
+                $this->plugin_url() . 'assets/js/inview.js',
+                array(),
                 self::VERSION,
                 true
             );
@@ -287,6 +300,150 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                     ),
                 ),
             ) );
+        }
+
+        /**
+         * Register Custom Post Type: timeline_step
+         */
+        public function register_cpt_timeline_step() {
+            $labels = array(
+                'name'               => __( 'Timeline Steps', 'sh-timeline' ),
+                'singular_name'      => __( 'Timeline Step', 'sh-timeline' ),
+                'add_new'            => __( 'Add New', 'sh-timeline' ),
+                'add_new_item'       => __( 'Add New Timeline Step', 'sh-timeline' ),
+                'edit_item'          => __( 'Edit Timeline Step', 'sh-timeline' ),
+                'new_item'           => __( 'New Timeline Step', 'sh-timeline' ),
+                'view_item'          => __( 'View Timeline Step', 'sh-timeline' ),
+                'search_items'       => __( 'Search Timeline Steps', 'sh-timeline' ),
+                'not_found'          => __( 'No steps found', 'sh-timeline' ),
+                'not_found_in_trash' => __( 'No steps found in Trash', 'sh-timeline' ),
+                'menu_name'          => __( 'Timeline Steps', 'sh-timeline' ),
+            );
+
+            $args = array(
+                'labels'             => $labels,
+                'public'             => true,
+                'show_in_rest'       => true,
+                'supports'           => array( 'title', 'editor', 'thumbnail' ),
+                'has_archive'        => false,
+                'rewrite'            => array( 'slug' => 'timeline-step' ),
+                'menu_position'      => 20,
+                'menu_icon'          => 'dashicons-editor-ol',
+            );
+
+            register_post_type( 'timeline_step', $args );
+        }
+
+        /**
+         * Meta box for Step Number
+         */
+        public function register_step_meta_box() {
+            add_meta_box(
+                'sh_tl_step_meta',
+                __( 'Step Details', 'sh-timeline' ),
+                array( $this, 'render_step_meta_box' ),
+                'timeline_step',
+                'side',
+                'default'
+            );
+        }
+
+        public function render_step_meta_box( $post ) {
+            wp_nonce_field( 'sh_tl_save_step', 'sh_tl_step_nonce' );
+            $step_num = get_post_meta( $post->ID, '_sh_tl_step_number', true );
+            $step_num = is_numeric( $step_num ) ? intval( $step_num ) : '';
+            echo '<p><label for="sh_tl_step_number"><strong>' . esc_html__( 'Step Number', 'sh-timeline' ) . '</strong></label></p>';
+            echo '<input type="number" min="0" step="1" id="sh_tl_step_number" name="sh_tl_step_number" value="' . esc_attr( $step_num ) . '" style="width:100%">';
+            echo '<p class="description">' . esc_html__( 'Used for ordering and display.', 'sh-timeline' ) . '</p>';
+        }
+
+        public function save_step_meta( $post_id ) {
+            if ( ! isset( $_POST['sh_tl_step_nonce'] ) || ! wp_verify_nonce( $_POST['sh_tl_step_nonce'], 'sh_tl_save_step' ) ) {
+                return;
+            }
+            if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+                return;
+            }
+            if ( isset( $_POST['post_type'] ) && 'timeline_step' === $_POST['post_type'] ) {
+                if ( ! current_user_can( 'edit_post', $post_id ) ) {
+                    return;
+                }
+            }
+            if ( isset( $_POST['sh_tl_step_number'] ) ) {
+                $num = intval( $_POST['sh_tl_step_number'] );
+                update_post_meta( $post_id, '_sh_tl_step_number', $num );
+            }
+        }
+
+        /**
+         * Shortcode: [construction_timeline]
+         */
+        public function render_construction_timeline( $atts ) {
+            $atts = shortcode_atts( array(), $atts, 'construction_timeline' );
+
+            // Query steps ordered by step number (ascending)
+            $query = new WP_Query( array(
+                'post_type'      => 'timeline_step',
+                'posts_per_page' => -1,
+                'meta_key'       => '_sh_tl_step_number',
+                'orderby'        => 'meta_value_num',
+                'order'          => 'ASC',
+                'no_found_rows'  => true,
+            ) );
+
+            if ( ! $query->have_posts() ) {
+                return '';
+            }
+
+            wp_enqueue_style( 'sh-timeline-style' );
+            wp_enqueue_script( 'sh-timeline-inview' );
+
+            ob_start();
+            echo '<section class="sh-ct" aria-label="Construction Timeline">';
+            echo '<div class="sh-ct-line" aria-hidden="true"></div>';
+
+            $i = 0;
+            while ( $query->have_posts() ) {
+                $query->the_post();
+                $i++;
+                $post_id   = get_the_ID();
+                $step_num  = get_post_meta( $post_id, '_sh_tl_step_number', true );
+                $step_num  = is_numeric( $step_num ) ? intval( $step_num ) : $i;
+                $title     = get_the_title();
+                $content   = apply_filters( 'the_content', get_the_content() );
+                $thumb_id  = get_post_thumbnail_id( $post_id );
+                $img_src   = '';
+                $img_alt   = '';
+                if ( $thumb_id ) {
+                    $src = wp_get_attachment_image_src( $thumb_id, 'large' );
+                    if ( $src && is_array( $src ) ) {
+                        $img_src = $src[0];
+                    }
+                    $alt = get_post_meta( $thumb_id, '_wp_attachment_image_alt', true );
+                    $img_alt = $alt ? $alt : $title;
+                }
+
+                $side_class = ( $i % 2 === 1 ) ? 'sh-ct-item--odd' : 'sh-ct-item--even';
+
+                echo '<article class="sh-ct-item ' . esc_attr( $side_class ) . '" aria-labelledby="ct-title-' . esc_attr( $post_id ) . '">';
+                echo '<header class="sh-ct-header" style="background:#f4c542">';
+                echo '<span class="sh-ct-step" style="background:#333;color:#fff" aria-label="Step ' . esc_attr( (string) $step_num ) . '">' . esc_html( (string) $step_num ) . '</span>';
+                echo '<h3 id="ct-title-' . esc_attr( $post_id ) . '" class="sh-ct-title">' . esc_html( $title ) . '</h3>';
+                echo '</header>';
+
+                if ( ! empty( $img_src ) ) {
+                    echo '<figure class="sh-ct-figure">';
+                    echo '<img src="' . esc_url( $img_src ) . '" alt="' . esc_attr( $img_alt ) . '">';
+                    echo '</figure>';
+                }
+
+                echo '<div class="sh-ct-text">' . $content . '</div>';
+                echo '</article>';
+            }
+            wp_reset_postdata();
+
+            echo '</section>';
+            return ob_get_clean();
         }
     }
 }
