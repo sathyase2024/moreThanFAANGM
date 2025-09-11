@@ -120,10 +120,11 @@
 }
 
 /* Construction Timeline (CPT-based) */
-.sh-ct { position: relative; }
+.sh-ct { position: relative; display: grid; grid-template-columns: 1fr; gap: 24px; }
 .sh-ct-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #e5e7eb; transform: translateX(-1px); }
-.sh-ct-item { position: relative; margin: 28px 0; opacity: 0; transform: translateY(10px); transition: opacity .4s ease, transform .4s ease; }
+.sh-ct-item { position: relative; margin: 0; opacity: 0; transform: translateY(10px); transition: opacity .4s ease, transform .4s ease; }
 .sh-ct-item.is-visible { opacity: 1; transform: none; }
+.sh-ct-card { position: relative; }
 .sh-ct-header { display: inline-flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.08); }
 .sh-ct-step { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 4px; font-weight: 700; }
 .sh-ct-title { margin: 0; font-weight: 700; }
@@ -131,16 +132,18 @@
 .sh-ct-figure img { display: block; width: 100%; height: auto; border-radius: 8px; }
 .sh-ct-text { color: #374151; line-height: 1.6; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; box-shadow: 0 8px 20px rgba(0,0,0,.06); }
 
-.sh-ct-item--odd .sh-ct-header { margin-right: 32px; }
-.sh-ct-item--even .sh-ct-header { margin-left: 32px; }
-.sh-ct-item--odd .sh-ct-text { margin-right: 32px; }
-.sh-ct-item--even .sh-ct-text { margin-left: 32px; }
+.sh-ct-item--odd .sh-ct-card { margin-right: 32px; }
+.sh-ct-item--even .sh-ct-card { margin-left: 32px; }
+.sh-ct-item--odd .sh-ct-card:before,
+.sh-ct-item--even .sh-ct-card:before { content: ""; position: absolute; top: 22px; border: 8px solid transparent; }
+.sh-ct-item--odd .sh-ct-card:before { right: -8px; border-left-color: #fff; filter: drop-shadow(-1px 0 0 #e5e7eb); }
+.sh-ct-item--even .sh-ct-card:before { left: -8px; border-right-color: #fff; filter: drop-shadow(1px 0 0 #e5e7eb); }
 
 @media (max-width: 767px) {
 	.sh-ct-line { left: 28px; transform: none; }
-	.sh-ct-item--odd .sh-ct-header,
-	.sh-ct-item--even .sh-ct-header { margin: 0 0 0 56px; }
-	.sh-ct-item--odd .sh-ct-text,
-	.sh-ct-item--even .sh-ct-text { margin: 8px 0 0 56px; }
+	.sh-ct-item--odd .sh-ct-card,
+	.sh-ct-item--even .sh-ct-card { margin: 0 0 0 56px; }
+	.sh-ct-item--odd .sh-ct-card:before,
+	.sh-ct-item--even .sh-ct-card:before { left: -8px; right: auto; border-right-color: #fff; border-left-color: transparent; }
 }
 

@@ -501,6 +501,7 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                 $side_class = ( $i % 2 === 1 ) ? 'sh-ct-item--odd' : 'sh-ct-item--even';
 
                 echo '<article class="sh-ct-item ' . esc_attr( $side_class ) . '" aria-labelledby="ct-title-' . esc_attr( $post_id ) . '">';
+                echo '<div class="sh-ct-card">';
                 echo '<header class="sh-ct-header" style="background:#f4c542">';
                 echo '<span class="sh-ct-step" style="background:#333;color:#fff" aria-label="Step ' . esc_attr( (string) $step_num ) . '">' . esc_html( (string) $step_num ) . '</span>';
                 echo '<h3 id="ct-title-' . esc_attr( $post_id ) . '" class="sh-ct-title">' . esc_html( $title ) . '</h3>';
@@ -513,6 +514,7 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                 }
 
                 echo '<div class="sh-ct-text">' . $content . '</div>';
+                echo '</div>';
                 echo '</article>';
             }
             wp_reset_postdata();
