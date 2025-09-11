@@ -84,7 +84,7 @@ if (!class_exists('SH_Process_Flow')) {
                 ? '<img src="' . $icon . '" alt="" class="sh-step__icon" loading="lazy" />'
                 : '<span class="sh-step__dot" aria-hidden="true"></span>';
 
-            return '\n<article class="sh-step" data-index="' . $index . '">\n\t<button class="sh-step__tab" role="tab" aria-selected="false" aria-controls="sh-step-panel-' . $index . '" tabindex="0">\n\t\t<span class="sh-step__marker">' . $marker . '<span class="sh-step__num">' . $index . '</span></span>\n\t\t<span class="sh-step__titles"><span class="sh-step__title">' . $title . '</span><span class="sh-step__subtitle">' . $subtitle . '</span></span>\n\t</button>\n\t<div class="sh-step__panel" id="sh-step-panel-' . $index . '" role="tabpanel" hidden>' . $body . '</div>\n</article>';
+            return '\n<article class="sh-step" data-index="' . $index . '">\n\t<button class="sh-step__tab" role="tab" aria-selected="false" aria-controls="sh-step-panel-' . $index . '" tabindex="0">\n\t\t<span class="sh-step__marker">' . $marker . '<span class="sh-step__num">' . $index . '</span></span>\n\t\t<span class="sh-step__titles"><span class="sh-step__title">' . $title . '</span><span class="sh-step__subtitle">' . $subtitle . '</span></span>\n\t</button>\n\t<div class="sh-step__panel" id="sh-step-panel-' . $index . '" role="tabpanel">' . $body . '</div>\n</article>';
         }
     }
 }

@@ -9,12 +9,7 @@
       var isActive = (i+1) === index;
       step.classList.toggle('is-active', isActive);
       if(panel){
-        if(isDesktop()){
-          panel.hidden = !isActive;
-          panel.dataset.open = isActive ? 'true' : 'false';
-        } else {
-          // keep accordion state independent; do not auto-close on mobile
-        }
+        panel.dataset.open = (isDesktop() ? (isActive ? 'true' : 'false') : (panel.dataset.open || 'false'));
       }
       if(tab){ tab.setAttribute('aria-selected', isActive ? 'true' : 'false'); }
     });
@@ -35,7 +30,7 @@
       steps.forEach(function(step, i){
         var tab = step.querySelector('.sh-step__tab');
         var panel = step.querySelector('.sh-step__panel');
-        if(panel){ panel.hidden = true; panel.dataset.open = 'false'; }
+        if(panel){ panel.dataset.open = 'false'; }
         if(tab){
           tab.addEventListener('click', function(){
             if(isDesktop()){
@@ -43,7 +38,6 @@
             } else {
               // accordion toggle
               var open = panel.dataset.open === 'true';
-              panel.hidden = open;
               panel.dataset.open = open ? 'false' : 'true';
               step.classList.toggle('is-active', !open);
             }
@@ -60,15 +54,13 @@
 
       function applyMode(){
         if(isDesktop()){
-          // show only active
           setActive(container, initial);
         } else {
-          // mobile: collapse all initially
           steps.forEach(function(step){
             var panel = step.querySelector('.sh-step__panel');
             var tab = step.querySelector('.sh-step__tab');
             step.classList.remove('is-active');
-            if(panel){ panel.hidden = true; panel.dataset.open = 'false'; }
+            if(panel){ panel.dataset.open = 'false'; }
             if(tab){ tab.setAttribute('aria-selected','false'); }
           });
         }

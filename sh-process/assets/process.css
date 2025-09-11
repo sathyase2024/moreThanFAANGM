@@ -21,7 +21,7 @@
 .sh-step.is-active .sh-step__marker{background:#fff;box-shadow:0 0 0 2px var(--sh-accent) inset}
 
 /* Accordion show/hide */
-.sh-step__panel[hidden]{display:block;height:0;overflow:hidden;padding-top:0;padding-bottom:0}
+.sh-step__panel[data-open="false"]{display:block;height:0;overflow:hidden;padding-top:0;padding-bottom:0}
 .sh-step__panel[data-open="true"]{height:auto}
 
 /* Desktop timeline (>=992px) */
