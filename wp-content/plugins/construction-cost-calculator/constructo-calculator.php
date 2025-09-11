@@ -14,6 +14,7 @@ if (!defined('ABSPATH')) {
 class Construction_Cost_Calculator {
     const VERSION = '1.1.0';
     const SLUG = 'construction-calculator';
+    const OPTION = 'construction_calculator_settings';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -23,6 +24,10 @@ class Construction_Cost_Calculator {
         add_shortcode('constructo_calculator', [$this, 'render_shortcode']);
         add_action('wp_ajax_construction_calc_submit', [$this, 'handle_form_submit']);
         add_action('wp_ajax_nopriv_construction_calc_submit', [$this, 'handle_form_submit']);
+        if (is_admin()) {
+            add_action('admin_menu', [$this, 'add_settings_page']);
+            add_action('admin_init', [$this, 'register_settings']);
+        }
     }
 
     public function register_assets() {
@@ -36,7 +41,7 @@ class Construction_Cost_Calculator {
         wp_register_script(
             self::SLUG,
             $asset_url . 'app.js',
-            ['wp-i18n'],
+            [],
             self::VERSION,
             true
         );
@@ -52,29 +57,24 @@ class Construction_Cost_Calculator {
             'year' => '2025',
         ], $atts, 'construction_calculator');
 
-        // Packages are data-driven and filterable
-        $packages = [
+        // Default packages are data-driven and filterable
+        $default_packages = [
             'standard' => 2099,
             'premium' => 2399,
             'luxury' => 2699,
         ];
-        $packages = apply_filters('construction_calculator_packages', $packages, $atts);
-
-        // Rates independent of package
-        $rates = [
+        $default_rates = [
             'sump_rate' => 24,
             'septic_rate' => 24,
             'wall_rate' => 425,
         ];
-        $rates = apply_filters('construction_calculator_rates', $rates, $atts);
 
-        // Works configuration (add more rows easily)
-        $works = [
+        $default_works = [
             [
                 'key' => 'builtup',
                 'label' => __('Enter required Built up Area for Ground Floor', 'construction-calculator'),
                 'unit' => 'sqft',
-                'rate_key' => 'package', // uses selected package rate
+                'rate_key' => 'package',
                 'inputs' => [ ['placeholder' => 'Area in sqft'] ],
             ],
             [
@@ -100,6 +100,17 @@ class Construction_Cost_Calculator {
                 'inputs' => [ ['placeholder' => 'Length'], ['placeholder' => 'Height'] ],
             ],
         ];
+
+        // Merge settings from admin page
+        $settings = $this->get_settings();
+        $packages = !empty($settings['packages']) && is_array($settings['packages']) ? $settings['packages'] : $default_packages;
+        $rates = !empty($settings['rates']) && is_array($settings['rates']) ? array_merge($default_rates, $settings['rates']) : $default_rates;
+        $works = !empty($settings['works']) && is_array($settings['works']) ? $settings['works'] : $default_works;
+
+        $packages = apply_filters('construction_calculator_packages', $packages, $atts);
+
+        $rates = apply_filters('construction_calculator_rates', $rates, $atts);
+
         $works = apply_filters('construction_calculator_works', $works, $atts);
 
         wp_enqueue_style(self::SLUG);
@@ -219,6 +230,113 @@ class Construction_Cost_Calculator {
         </div>
         <?php
         return ob_get_clean();
+    }
+
+    private function get_settings() {
+        $raw = get_option(self::OPTION, []);
+        if (!is_array($raw)) {
+            $raw = [];
+        }
+        $decode = function($val) {
+            if (is_array($val)) return $val;
+            if (!is_string($val) || trim($val) === '') return [];
+            $data = json_decode($val, true);
+            return is_array($data) ? $data : [];
+        };
+        return [
+            'packages' => isset($raw['packages']) ? $decode($raw['packages']) : [],
+            'rates' => isset($raw['rates']) ? $decode($raw['rates']) : [],
+            'works' => isset($raw['works']) ? $decode($raw['works']) : [],
+        ];
+    }
+
+    public function add_settings_page() {
+        add_options_page(
+            __('Construction Calculator', 'construction-calculator'),
+            __('Construction Calculator', 'construction-calculator'),
+            'manage_options',
+            'construction-calculator-settings',
+            [$this, 'render_settings_page']
+        );
+    }
+
+    public function register_settings() {
+        register_setting(self::OPTION, self::OPTION, [
+            'type' => 'array',
+            'sanitize_callback' => [$this, 'sanitize_settings'],
+            'default' => [],
+        ]);
+
+        add_settings_section('construction_calculator_main', __('Configuration', 'construction-calculator'), function(){
+            echo '<p>' . esc_html__('Provide JSON for packages, rates, and works. Invalid JSON will be ignored.') . '</p>';
+        }, 'construction-calculator-settings');
+
+        add_settings_field('packages', __('Packages (JSON)', 'construction-calculator'), function(){
+            $opt = get_option(self::OPTION, []);
+            $val = isset($opt['packages']) ? $opt['packages'] : json_encode(['standard'=>2099,'premium'=>2399,'luxury'=>2699], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+            echo '<textarea name="' . esc_attr(self::OPTION) . '[packages]" rows="6" style="width:100%;">' . esc_textarea($val) . '</textarea>';
+        }, 'construction-calculator-settings', 'construction_calculator_main');
+
+        add_settings_field('rates', __('Rates (JSON)', 'construction-calculator'), function(){
+            $opt = get_option(self::OPTION, []);
+            $val = isset($opt['rates']) ? $opt['rates'] : json_encode(['sump_rate'=>24,'septic_rate'=>24,'wall_rate'=>425], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+            echo '<textarea name="' . esc_attr(self::OPTION) . '[rates]" rows="6" style="width:100%;">' . esc_textarea($val) . '</textarea>';
+        }, 'construction-calculator-settings', 'construction_calculator_main');
+
+        add_settings_field('works', __('Works/Rows (JSON)', 'construction-calculator'), function(){
+            $opt = get_option(self::OPTION, []);
+            $sample = [
+                ['key'=>'builtup','label'=>'Enter required Built up Area for Ground Floor','unit'=>'sqft','rate_key'=>'package','inputs'=>[['placeholder'=>'Area in sqft']]],
+                ['key'=>'sump','label'=>'RCC Water Sump','unit'=>'ltr','rate_key'=>'sump_rate','inputs'=>[['placeholder'=>'No. of Liters']]],
+                ['key'=>'septic','label'=>'Septic Tank','unit'=>'ltr','rate_key'=>'septic_rate','inputs'=>[['placeholder'=>'No. of Liters']]],
+                ['key'=>'wall','label'=>'Plain Compound Wall','unit'=>'sqft','rate_key'=>'wall_rate','math'=>'product','inputs'=>[['placeholder'=>'Length'],['placeholder'=>'Height']]],
+            ];
+            $val = isset($opt['works']) ? $opt['works'] : json_encode($sample, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+            echo '<textarea name="' . esc_attr(self::OPTION) . '[works]" rows="12" style="width:100%;">' . esc_textarea($val) . '</textarea>';
+        }, 'construction-calculator-settings', 'construction_calculator_main');
+    }
+
+    public function sanitize_settings($input) {
+        $output = [];
+        foreach (['packages','rates','works'] as $key) {
+            if (!isset($input[$key])) { continue; }
+            $raw = wp_unslash($input[$key]);
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                // Basic deep sanitization
+                $output[$key] = $this->deep_sanitize($decoded);
+            } else {
+                // Keep original text so user can fix later
+                $output[$key] = $raw;
+            }
+        }
+        return $output;
+    }
+
+    private function deep_sanitize($value) {
+        if (is_array($value)) {
+            $clean = [];
+            foreach ($value as $k => $v) {
+                $clean[sanitize_text_field((string)$k)] = $this->deep_sanitize($v);
+            }
+            return $clean;
+        }
+        if (is_scalar($value)) {
+            return is_numeric($value) ? (float)$value : sanitize_text_field((string)$value);
+        }
+        return '';
+    }
+
+    public function render_settings_page() {
+        if (!current_user_can('manage_options')) { return; }
+        echo '<div class="wrap">';
+        echo '<h1>' . esc_html__('Construction Calculator Settings', 'construction-calculator') . '</h1>';
+        echo '<form method="post" action="options.php">';
+        settings_fields(self::OPTION);
+        do_settings_sections('construction-calculator-settings');
+        submit_button();
+        echo '</form>';
+        echo '</div>';
     }
 
     public function handle_form_submit() {
