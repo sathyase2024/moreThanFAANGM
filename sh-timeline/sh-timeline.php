@@ -23,6 +23,7 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
 
             // CPT + Meta + Shortcode for Construction Timeline
             add_action( 'init', array( $this, 'register_cpt_timeline_step' ) );
+            add_action( 'init', array( $this, 'register_taxonomy_timeline_series' ) );
             add_action( 'add_meta_boxes', array( $this, 'register_step_meta_box' ) );
             add_action( 'save_post', array( $this, 'save_step_meta' ) );
             add_shortcode( 'construction_timeline', array( $this, 'render_construction_timeline' ) );
@@ -300,6 +301,35 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                     ),
                 ),
             ) );
+
+            // VC element for CPT-based Construction Timeline with Series filter
+            $series_options = array( __( 'All Series', 'sh-timeline' ) => '' );
+            $terms = get_terms( array(
+                'taxonomy'   => 'timeline_series',
+                'hide_empty' => false,
+            ) );
+            if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+                foreach ( $terms as $term ) {
+                    $series_options[ $term->name ] = $term->slug;
+                }
+            }
+
+            vc_map( array(
+                'name'        => __( 'SH Construction Timeline', 'sh-timeline' ),
+                'base'        => 'construction_timeline',
+                'icon'        => 'dashicons-editor-ol',
+                'category'    => __( 'Content', 'sh-timeline' ),
+                'description' => __( 'Display Timeline Steps by Series.', 'sh-timeline' ),
+                'params'      => array(
+                    array(
+                        'type'        => 'dropdown',
+                        'heading'     => __( 'Series', 'sh-timeline' ),
+                        'param_name'  => 'series',
+                        'value'       => $series_options,
+                        'description' => __( 'Choose a series to display. Leave empty to show all.', 'sh-timeline' ),
+                    ),
+                ),
+            ) );
         }
 
         /**
@@ -329,9 +359,36 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                 'rewrite'            => array( 'slug' => 'timeline-step' ),
                 'menu_position'      => 20,
                 'menu_icon'          => 'dashicons-editor-ol',
+                'taxonomies'         => array( 'timeline_series' ),
             );
 
             register_post_type( 'timeline_step', $args );
+        }
+
+        /**
+         * Taxonomy: timeline_series
+         */
+        public function register_taxonomy_timeline_series() {
+            $labels = array(
+                'name'          => __( 'Timeline Series', 'sh-timeline' ),
+                'singular_name' => __( 'Timeline Series', 'sh-timeline' ),
+                'search_items'  => __( 'Search Series', 'sh-timeline' ),
+                'all_items'     => __( 'All Series', 'sh-timeline' ),
+                'edit_item'     => __( 'Edit Series', 'sh-timeline' ),
+                'update_item'   => __( 'Update Series', 'sh-timeline' ),
+                'add_new_item'  => __( 'Add New Series', 'sh-timeline' ),
+                'new_item_name' => __( 'New Series Name', 'sh-timeline' ),
+                'menu_name'     => __( 'Series', 'sh-timeline' ),
+            );
+            register_taxonomy( 'timeline_series', array( 'timeline_step' ), array(
+                'labels'            => $labels,
+                'public'            => true,
+                'hierarchical'      => false,
+                'show_ui'           => true,
+                'show_admin_column' => true,
+                'show_in_rest'      => true,
+                'rewrite'           => array( 'slug' => 'timeline-series' ),
+            ) );
         }
 
         /**
@@ -379,17 +436,35 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
          * Shortcode: [construction_timeline]
          */
         public function render_construction_timeline( $atts ) {
-            $atts = shortcode_atts( array(), $atts, 'construction_timeline' );
+            $atts = shortcode_atts( array(
+                'series' => '',
+            ), $atts, 'construction_timeline' );
 
-            // Query steps ordered by step number (ascending)
-            $query = new WP_Query( array(
+            $args = array(
                 'post_type'      => 'timeline_step',
                 'posts_per_page' => -1,
                 'meta_key'       => '_sh_tl_step_number',
                 'orderby'        => 'meta_value_num',
                 'order'          => 'ASC',
                 'no_found_rows'  => true,
-            ) );
+            );
+
+            $series = trim( (string) $atts['series'] );
+            if ( $series !== '' ) {
+                $slugs = array_filter( array_map( 'trim', explode( ',', $series ) ) );
+                if ( ! empty( $slugs ) ) {
+                    $args['tax_query'] = array(
+                        array(
+                            'taxonomy' => 'timeline_series',
+                            'field'    => 'slug',
+                            'terms'    => $slugs,
+                        ),
+                    );
+                }
+            }
+
+            // Query steps ordered by step number (ascending)
+            $query = new WP_Query( $args );
 
             if ( ! $query->have_posts() ) {
                 return '';

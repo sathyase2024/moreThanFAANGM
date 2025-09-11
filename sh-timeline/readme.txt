@@ -13,6 +13,8 @@ Alternating vertical timeline (Deejos-like). Provides a [sh_timeline] shortcode 
 - Step numbers and title header per item
 - Single image or multi-image gallery per item
 - Auto-rotating gallery (hover to pause), configurable interval
+- Custom Post Type: timeline_step with Step Number meta
+- Taxonomy: timeline_series to group multiple timelines
 
 == Usage ==
 
@@ -23,7 +25,8 @@ Alternating vertical timeline (Deejos-like). Provides a [sh_timeline] shortcode 
 2) WPBakery element
 - Edit a page with WPBakery → Add Element → SH Timeline.
 - Add items (Date, Title, Text, Image). Optional Accent Color.
- - For multiple images: use the Gallery field (attach_images). Autoplay Interval (ms) controls slide speed.
+- For multiple images: use the Gallery field (attach_images). Autoplay Interval (ms) controls slide speed.
+- Construction Timeline (CPT): Add Element → SH Construction Timeline → choose Series.
 
 3) Shortcode (without WPBakery)
 - Example with JSON items (minimal):
@@ -34,6 +37,12 @@ Alternating vertical timeline (Deejos-like). Provides a [sh_timeline] shortcode 
  {"date":"Step 1","title":"Design","text":"Concept & planning.","gallery_urls":["https://example.com/a.jpg","https://example.com/b.jpg"]},
  {"date":"Step 2","title":"Build","text":"Construction phase.","gallery_urls":"https://example.com/c.jpg, https://example.com/d.jpg"}
 ]']
+
+4) Multiple timelines per page
+- Create Series under Timeline Steps → Series, assign steps to a series.
+- Insert multiple blocks/elements:
+  - Gutenberg: use shortcode block with [construction_timeline series="series-a"], [construction_timeline series="series-b"], etc.
+  - WPBakery: add multiple "SH Construction Timeline" elements and select each series.
 
 == Notes ==
 - Styles are enqueued automatically when the shortcode renders.
