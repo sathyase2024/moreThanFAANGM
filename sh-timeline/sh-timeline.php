@@ -572,8 +572,8 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
 
                 echo '<article class="sh-ct-item ' . esc_attr( $side_class ) . '" aria-labelledby="ct-title-' . esc_attr( $post_id ) . '">';
                 echo '<div class="sh-ct-card">';
-                echo '<header class="sh-ct-header" style="background:#f4c542">';
-                echo '<span class="sh-ct-step" style="background:#333;color:#fff" aria-label="Step ' . esc_attr( (string) $step_num ) . '">' . esc_html( (string) $step_num ) . '</span>';
+                echo '<header class="sh-ct-header">';
+                echo '<span class="sh-ct-step" aria-label="Step ' . esc_attr( (string) $step_num ) . '">' . esc_html( (string) $step_num ) . '</span>';
                 echo '<h3 id="ct-title-' . esc_attr( $post_id ) . '" class="sh-ct-title">' . esc_html( $title ) . '</h3>';
                 echo '</header>';
 
