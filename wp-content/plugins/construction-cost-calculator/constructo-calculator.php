@@ -26,6 +26,7 @@ class Construction_Cost_Calculator {
         if (is_admin()) {
             add_action('admin_menu', [$this, 'add_settings_page']);
             add_action('admin_init', [$this, 'register_settings']);
+            add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
         }
     }
 
@@ -234,19 +235,21 @@ class Construction_Cost_Calculator {
             echo '<p>' . esc_html__('Provide JSON for packages, rates, and works. Invalid JSON will be ignored.') . '</p>';
         }, 'construction-calculator-settings');
 
-        add_settings_field('packages', __('Packages (JSON)', 'construction-calculator'), function(){
+        add_settings_field('packages', __('Packages', 'construction-calculator'), function(){
             $opt = get_option(self::OPTION, []);
             $val = isset($opt['packages']) ? $opt['packages'] : json_encode(['standard'=>2099,'premium'=>2399,'luxury'=>2699], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
-            echo '<textarea name="' . esc_attr(self::OPTION) . '[packages]" rows="6" style="width:100%;">' . esc_textarea($val) . '</textarea>';
+            echo '<div id="cc-admin-packages" class="cc-admin-list" data-type="packages"></div>';
+            echo '<textarea class="cc-hidden-json" name="' . esc_attr(self::OPTION) . '[packages]" rows="6" style="display:none;width:100%;">' . esc_textarea($val) . '</textarea>';
         }, 'construction-calculator-settings', 'construction_calculator_main');
 
-        add_settings_field('rates', __('Rates (JSON)', 'construction-calculator'), function(){
+        add_settings_field('rates', __('Rates', 'construction-calculator'), function(){
             $opt = get_option(self::OPTION, []);
             $val = isset($opt['rates']) ? $opt['rates'] : json_encode(['sump_rate'=>24,'septic_rate'=>24,'wall_rate'=>425], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
-            echo '<textarea name="' . esc_attr(self::OPTION) . '[rates]" rows="6" style="width:100%;">' . esc_textarea($val) . '</textarea>';
+            echo '<div id="cc-admin-rates" class="cc-admin-list" data-type="rates"></div>';
+            echo '<textarea class="cc-hidden-json" name="' . esc_attr(self::OPTION) . '[rates]" rows="6" style="display:none;width:100%;">' . esc_textarea($val) . '</textarea>';
         }, 'construction-calculator-settings', 'construction_calculator_main');
 
-        add_settings_field('works', __('Works/Rows (JSON)', 'construction-calculator'), function(){
+        add_settings_field('works', __('Works/Rows', 'construction-calculator'), function(){
             $opt = get_option(self::OPTION, []);
             $sample = [
                 ['key'=>'builtup','label'=>'Enter required Built up Area for Ground Floor','unit'=>'sqft','rate_key'=>'package','inputs'=>[['placeholder'=>'Area in sqft']]],
@@ -255,7 +258,8 @@ class Construction_Cost_Calculator {
                 ['key'=>'wall','label'=>'Plain Compound Wall','unit'=>'sqft','rate_key'=>'wall_rate','math'=>'product','inputs'=>[['placeholder'=>'Length'],['placeholder'=>'Height']]],
             ];
             $val = isset($opt['works']) ? $opt['works'] : json_encode($sample, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
-            echo '<textarea name="' . esc_attr(self::OPTION) . '[works]" rows="12" style="width:100%;">' . esc_textarea($val) . '</textarea>';
+            echo '<div id="cc-admin-works" class="cc-admin-list" data-type="works"></div>';
+            echo '<textarea class="cc-hidden-json" name="' . esc_attr(self::OPTION) . '[works]" rows="12" style="display:none;width:100%;">' . esc_textarea($val) . '</textarea>';
         }, 'construction-calculator-settings', 'construction_calculator_main');
     }
 
@@ -294,12 +298,19 @@ class Construction_Cost_Calculator {
         if (!current_user_can('manage_options')) { return; }
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Construction Calculator Settings', 'construction-calculator') . '</h1>';
-        echo '<form method="post" action="options.php">';
+        echo '<form method="post" action="options.php" class="cc-admin-form">';
         settings_fields(self::OPTION);
         do_settings_sections('construction-calculator-settings');
         submit_button();
         echo '</form>';
         echo '</div>';
+    }
+
+    public function enqueue_admin_assets($hook) {
+        if ($hook !== 'settings_page_construction-calculator-settings') { return; }
+        $asset_url = plugin_dir_url(__FILE__) . 'assets/';
+        wp_enqueue_style(self::SLUG . '-admin', $asset_url . 'admin.css', [], self::VERSION);
+        wp_enqueue_script(self::SLUG . '-admin', $asset_url . 'admin.js', ['jquery'], self::VERSION, true);
     }
 
 }
