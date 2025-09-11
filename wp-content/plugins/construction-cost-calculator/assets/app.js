@@ -18,7 +18,9 @@
     var selectedPackage = container.querySelector('.constructo-package')?.value;
     var packageRate = getPackageRate(packages, selectedPackage);
 
-    // Update visible rates in each row
+    var total = 0;
+
+    // Update visible rates in each row and compute in one pass
     container.querySelectorAll('.constructo-row[data-key]').forEach(function(row){
       var rateKey = row.getAttribute('data-rate-key');
       var rateValue = rateKey === 'package' ? packageRate : (rates[rateKey] || 0);
@@ -42,15 +44,44 @@
       var lineCost = qty * rateValue;
       var costEl = row.querySelector('[data-cost]');
       if(costEl){ costEl.textContent = formatCurrency(lineCost); }
+      total += lineCost;
     });
 
-    var total = 0;
-    container.querySelectorAll('.constructo-row [data-cost]').forEach(function(el){
-      var text = el.textContent.replace(/[^0-9.]/g, '') || '0';
-      total += parseFloat(text || '0');
-    });
     var totalEl = container.querySelector('[data-total]');
     if(totalEl){ totalEl.textContent = formatCurrency(total); }
+  }
+
+  function ordinal(n){
+    var s=['th','st','nd','rd'], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]);
+  }
+
+  function renderBuiltupInputs(){
+    var container = document.querySelector('.constructo-wrapper');
+    if(!container){ return; }
+    var row = container.querySelector('.constructo-row[data-key="builtup"] .c-col.area');
+    var floorsSelect = container.querySelector('.constructo-floor');
+    if(!row || !floorsSelect){ return; }
+    var numAdditional = parseInt(floorsSelect.value || '0', 10);
+    var totalFloors = 1 + (isFinite(numAdditional) ? numAdditional : 0); // ground + N
+
+    var wrap = document.createElement('div');
+    wrap.className = 'grid-2';
+
+    for(var i=0;i<totalFloors;i++){
+      var input = document.createElement('input');
+      input.type = 'number';
+      input.min = '0';
+      input.step = '1';
+      if(i===0){
+        input.placeholder = 'Ground sqft';
+      } else {
+        input.placeholder = ordinal(i) + ' floor sqft';
+      }
+      wrap.appendChild(input);
+    }
+
+    row.innerHTML = '';
+    row.appendChild(wrap);
   }
 
   function bind(){
@@ -61,6 +92,7 @@
     });
     container.addEventListener('change', function(e){
       if(e.target.matches('.constructo-package')){ recalc(); }
+      if(e.target.matches('.constructo-floor')){ renderBuiltupInputs(); recalc(); }
     });
     var openBtn = container.querySelector('.constructo-button');
     var modal = container.querySelector('.constructo-modal');
@@ -125,6 +157,7 @@
         });
       });
     }
+    renderBuiltupInputs();
     recalc();
   }
 
