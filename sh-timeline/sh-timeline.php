@@ -33,6 +33,13 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                 array(),
                 self::VERSION
             );
+            wp_register_script(
+                'sh-timeline-slider',
+                $this->plugin_url() . 'assets/js/slider.js',
+                array('jquery'),
+                self::VERSION,
+                true
+            );
         }
 
         public function register_shortcode() {
@@ -81,6 +88,7 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
             }
 
             wp_enqueue_style( 'sh-timeline-style' );
+            wp_enqueue_script( 'sh-timeline-slider' );
 
             $accent_style = '';
             if ( ! empty( $atts['accent_color'] ) ) {
@@ -102,6 +110,21 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                 $text        = isset( $item['text'] ) ? wp_kses_post( $item['text'] ) : '';
                 $image_id    = isset( $item['image'] ) ? intval( $item['image'] ) : 0;
                 $image_url   = '';
+                $gallery_ids = array();
+
+                // Parse gallery (WPBakery attach_images returns comma-separated IDs)
+                if ( isset( $item['gallery'] ) && ! empty( $item['gallery'] ) ) {
+                    $csv = trim( (string) $item['gallery'] );
+                    if ( $csv !== '' ) {
+                        $parts = array_filter( array_map( 'trim', explode( ',', $csv ) ) );
+                        foreach ( $parts as $pid ) {
+                            $int_id = intval( $pid );
+                            if ( $int_id > 0 ) {
+                                $gallery_ids[] = $int_id;
+                            }
+                        }
+                    }
+                }
 
                 if ( $image_id > 0 ) {
                     $src = wp_get_attachment_image_src( $image_id, 'large' );
@@ -123,12 +146,29 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                 if ( ! empty( $date ) ) {
                     echo '<div class="sh-tl-date">' . $date . '</div>';
                 }
-                if ( ! empty( $image_url ) ) {
-                    $alt = ! empty( $title ) ? $title : 'Timeline image';
-                    echo '<div class="sh-tl-image"><img src="' . esc_url( $image_url ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy"></div>';
-                }
+                // Header: step number + title
+                echo '<div class="sh-tl-header">';
+                echo '<span class="sh-tl-step">' . esc_html( (string) $index ) . '</span>';
                 if ( ! empty( $title ) ) {
                     echo '<h3 class="sh-tl-title">' . esc_html( $title ) . '</h3>';
+                }
+                echo '</div>';
+
+                // Gallery (takes precedence if provided), else single image
+                if ( ! empty( $gallery_ids ) ) {
+                    echo '<div class="sh-tl-gallery" data-autoplay="1" data-interval="3500">';
+                    foreach ( $gallery_ids as $g_id ) {
+                        $src = wp_get_attachment_image_src( $g_id, 'large' );
+                        if ( $src && is_array( $src ) ) {
+                            $alt_text = get_post_meta( $g_id, '_wp_attachment_image_alt', true );
+                            $alt_out  = ! empty( $alt_text ) ? $alt_text : ( ! empty( $title ) ? $title : 'Timeline image' );
+                            echo '<div class="sh-tl-slide"><img src="' . esc_url( $src[0] ) . '" alt="' . esc_attr( $alt_out ) . '" loading="lazy"></div>';
+                        }
+                    }
+                    echo '</div>';
+                } elseif ( ! empty( $image_url ) ) {
+                    $alt = ! empty( $title ) ? $title : 'Timeline image';
+                    echo '<div class="sh-tl-image"><img src="' . esc_url( $image_url ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy"></div>';
                 }
                 if ( ! empty( $text ) ) {
                     echo '<div class="sh-tl-text">' . $text . '</div>';
@@ -187,6 +227,12 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                                 'heading'     => __( 'Image (optional)', 'sh-timeline' ),
                                 'param_name'  => 'image',
                             ),
+                            array(
+                                'type'        => 'attach_images',
+                                'heading'     => __( 'Gallery (optional, multiple)', 'sh-timeline' ),
+                                'param_name'  => 'gallery',
+                                'description' => __( 'Select multiple images to show as an auto-sliding gallery.', 'sh-timeline' ),
+                            ),
                         ),
                     ),
                     array(
@@ -194,6 +240,12 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                         'heading'     => __( 'Accent Color', 'sh-timeline' ),
                         'param_name'  => 'accent_color',
                         'description' => __( 'Set the timeline accent color.', 'sh-timeline' ),
+                    ),
+                    array(
+                        'type'        => 'textfield',
+                        'heading'     => __( 'Autoplay Interval (ms)', 'sh-timeline' ),
+                        'param_name'  => 'autoplay_ms',
+                        'description' => __( 'Controls gallery auto-rotation speed. Default 3500.', 'sh-timeline' ),
                     ),
                 ),
             ) );
