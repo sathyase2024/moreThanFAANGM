@@ -1,4 +1,4 @@
-.constructo-wrapper{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:#222}
+.constructo-wrapper{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:#222;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:16px}
 .constructo-header{text-align:center;margin:40px 0 20px}
 .constructo-header h2{font-weight:800;letter-spacing:.3px;margin:0 0 6px}
 .constructo-header p{margin:0;color:#555}
@@ -8,7 +8,7 @@
 .constructo-controls label{display:flex;align-items:center;gap:10px;font-weight:600}
 .constructo-controls select{padding:8px 10px;border:1px solid #ccc;border-radius:6px}
 
-.constructo-table{border:1px solid #d6d6d6;border-radius:6px;overflow:hidden;margin:10px auto;max-width:1100px}
+.constructo-table{border:1px solid #d6d6d6;border-radius:6px;overflow:hidden;margin:10px auto;max-width:1100px;background:#fff}
 .constructo-row{display:grid;grid-template-columns:2fr 1.2fr .6fr .6fr .8fr;align-items:center;border-bottom:1px solid #eee}
 .constructo-row:last-child{border-bottom:none}
 .constructo-row > .c-col{padding:14px 16px}
