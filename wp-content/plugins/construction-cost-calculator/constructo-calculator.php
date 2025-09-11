@@ -187,7 +187,8 @@ class Construction_Cost_Calculator {
             </div>
 
             <div class="constructo-cta">
-                <a href="#" class="constructo-button"><?php echo esc_html__('GET FREE ESTIMATE NOW'); ?></a>
+                <?php $wa_url = 'https://api.whatsapp.com/send?phone=916382088988&text=' . rawurlencode('Hi Emerge Architects Free estimate required'); ?>
+                <a href="<?php echo esc_url($wa_url); ?>" target="_blank" rel="noopener" class="constructo-button"><?php echo esc_html__('GET FREE ESTIMATE NOW'); ?></a>
             </div>
         </div>
         <?php
