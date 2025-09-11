@@ -52,8 +52,8 @@ class Construction_Cost_Calculator {
      */
     public function render_shortcode($atts = []) {
         $atts = shortcode_atts([
-            'title' => __('Home Construction Cost Calculator', 'construction-calculator'),
-            'city' => 'Coimbatore',
+            'title' => __('Architectural Construction Cost Calculator 2025 (Tamilnadu)', 'construction-calculator'),
+            'city' => 'Tamilnadu',
             'year' => '2025',
         ], $atts, 'construction_calculator');
 
@@ -129,7 +129,7 @@ class Construction_Cost_Calculator {
         ?>
         <div class="constructo-wrapper">
             <div class="constructo-header">
-                <h2><?php echo esc_html($atts['title']); ?> (<?php echo esc_html($atts['year']); ?>) <?php echo esc_html($atts['city']); ?></h2>
+                <h2><?php echo esc_html($atts['title']); ?></h2>
                 <p><?php echo esc_html__('You can arrive your Construction estimate here'); ?></p>
             </div>
             <div class="constructo-controls">
