@@ -147,6 +147,6 @@
 	.sh-ct-card { width: auto; margin: 0 0 0 56px; }
 	.sh-ct-item--odd .sh-ct-card:before,
 	.sh-ct-item--even .sh-ct-card:before { left: -10px; right: auto; border-right-color: #fff; border-left-color: transparent; }
-	.sh-ct-step { width: 56px; height: 56px; font-size: 20px; }
+	.sh-ct-step { width: 56px; height: 56px; font-size: 26px; }
 }
 
