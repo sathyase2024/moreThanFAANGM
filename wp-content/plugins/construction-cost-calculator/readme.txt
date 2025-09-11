@@ -1,4 +1,4 @@
-=== Constructo Cost Calculator ===
+=== Construction Cost Calculator ===
 Contributors: your-team
 Tags: calculator, construction, estimate, cost, builder
 Requires at least: 5.5
@@ -13,12 +13,18 @@ Simple, lightweight construction cost estimator. Adds a responsive calculator vi
 1. Upload the `construction-cost-calculator` folder to `/wp-content/plugins/` and activate.
 2. Add the shortcode to any page or post:
 
-`[constructo_calculator title="Home Construction Cost Calculator (2025) Coimbatore" base_rate="2099" sump_rate="24" septic_rate="24" wall_rate="425"]`
+`[construction_calculator title="Home Construction Cost Calculator (2025) Coimbatore"]`
 
 == Filters ==
-`constructo_calculator_rates` — Modify the rates array before rendering.
+`construction_calculator_packages` — Filter the packages and base per-sqft rates.
+`construction_calculator_rates` — Modify non-package rates (sump, septic, wall).
+`construction_calculator_works` — Add or customize table rows.
 
 == Changelog ==
+1.1.0
+* Renamed to Construction Cost Calculator and added [construction_calculator] shortcode
+* Data-driven packages and works, responsive UI, and JS calculations
+
 1.0.0
 * Initial release
 

@@ -4,31 +4,51 @@
     return 'Rs. ' + new Intl.NumberFormat(undefined, {maximumFractionDigits:0}).format(Math.round(amount));
   }
 
-  function calculate(){
+  function getPackageRate(packages, selectedKey){
+    return packages[selectedKey] || 0;
+  }
+
+  function recalc(){
     var container = document.querySelector('.constructo-wrapper');
     if(!container){ return; }
 
-    var rates = (window.CONSTRUCTO_CALC && window.CONSTRUCTO_CALC.rates) || {};
+    var data = window.CONSTRUCTION_CALC || {};
+    var packages = data.packages || {};
+    var rates = data.rates || {};
+    var selectedPackage = container.querySelector('.constructo-package')?.value;
+    var packageRate = getPackageRate(packages, selectedPackage);
 
-    var area = parseFloat(container.querySelector('.input-area')?.value || '0');
-    var sump = parseFloat(container.querySelector('.input-sump')?.value || '0');
-    var septic = parseFloat(container.querySelector('.input-septic')?.value || '0');
-    var wallLen = parseFloat(container.querySelector('.input-wall-length')?.value || '0');
-    var wallHt = parseFloat(container.querySelector('.input-wall-height')?.value || '0');
+    // Update visible rates in each row
+    container.querySelectorAll('.constructo-row[data-key]').forEach(function(row){
+      var rateKey = row.getAttribute('data-rate-key');
+      var rateValue = rateKey === 'package' ? packageRate : (rates[rateKey] || 0);
+      var rateEl = row.querySelector('[data-rate]');
+      if(rateEl){ rateEl.textContent = 'Rs. ' + new Intl.NumberFormat().format(rateValue); }
 
-    var builtupCost = area * (rates.base_rate || 0);
-    var sumpCost = sump * (rates.sump_rate || 0);
-    var septicCost = septic * (rates.septic_rate || 0);
-    var wallArea = wallLen * wallHt;
-    var wallCost = wallArea * (rates.wall_rate || 0);
+      var inputs = Array.from(row.querySelectorAll('input[type="number"]'));
+      var qty = 0;
+      if(row.getAttribute('data-math') === 'product'){
+        qty = inputs.reduce(function(acc, el){
+          var v = parseFloat(el.value || '0');
+          return acc * (isFinite(v) ? v : 0);
+        }, 1);
+      } else {
+        qty = inputs.reduce(function(acc, el){
+          var v = parseFloat(el.value || '0');
+          return acc + (isFinite(v) ? v : 0);
+        }, 0);
+      }
 
-    var lineCosts = [builtupCost, sumpCost, septicCost, wallCost];
-    var costEls = container.querySelectorAll('[data-line] [data-cost]');
-    [builtupCost, sumpCost, septicCost, wallCost].forEach(function(v, i){
-      if(costEls[i]) costEls[i].textContent = formatCurrency(v);
+      var lineCost = qty * rateValue;
+      var costEl = row.querySelector('[data-cost]');
+      if(costEl){ costEl.textContent = formatCurrency(lineCost); }
     });
 
-    var total = lineCosts.reduce(function(a,b){return a+b;}, 0);
+    var total = 0;
+    container.querySelectorAll('.constructo-row [data-cost]').forEach(function(el){
+      var text = el.textContent.replace(/[^0-9.]/g, '') || '0';
+      total += parseFloat(text || '0');
+    });
     var totalEl = container.querySelector('[data-total]');
     if(totalEl){ totalEl.textContent = formatCurrency(total); }
   }
@@ -37,12 +57,16 @@
     var container = document.querySelector('.constructo-wrapper');
     if(!container){ return; }
     container.addEventListener('input', function(e){
-      var t = e.target;
-      if(t.matches('input[type="number"]')){
-        calculate();
-      }
+      if(e.target.matches('input[type="number"]')){ recalc(); }
     });
-    calculate();
+    container.addEventListener('change', function(e){
+      if(e.target.matches('.constructo-package')){ recalc(); }
+    });
+    container.querySelector('.constructo-button')?.addEventListener('click', function(e){
+      e.preventDefault();
+      alert('Thank you! A contact form can open here.');
+    });
+    recalc();
   }
 
   if(document.readyState === 'loading'){
