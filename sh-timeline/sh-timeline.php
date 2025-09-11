@@ -413,6 +413,19 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
             echo '<p><label for="sh_tl_step_number"><strong>' . esc_html__( 'Step Number', 'sh-timeline' ) . '</strong></label></p>';
             echo '<input type="number" min="0" step="1" id="sh_tl_step_number" name="sh_tl_step_number" value="' . esc_attr( $step_num ) . '" style="width:100%">';
             echo '<p class="description">' . esc_html__( 'Used for ordering and display.', 'sh-timeline' ) . '</p>';
+
+            // Gallery IDs (comma-separated attachment IDs)
+            $gallery_ids = get_post_meta( $post->ID, '_sh_tl_gallery_ids', true );
+            echo '<hr />';
+            echo '<p><label for="sh_tl_gallery_ids"><strong>' . esc_html__( 'Gallery (Attachment IDs)', 'sh-timeline' ) . '</strong></label></p>';
+            echo '<input type="text" id="sh_tl_gallery_ids" name="sh_tl_gallery_ids" value="' . esc_attr( $gallery_ids ) . '" placeholder="e.g. 123,456,789" style="width:100%">';
+            echo '<p class="description">' . esc_html__( 'Optional: comma-separated media IDs. Use Media Library to find IDs.', 'sh-timeline' ) . '</p>';
+
+            // Gallery URLs (comma-separated or JSON array)
+            $gallery_urls = get_post_meta( $post->ID, '_sh_tl_gallery_urls', true );
+            echo '<p><label for="sh_tl_gallery_urls"><strong>' . esc_html__( 'Gallery URLs', 'sh-timeline' ) . '</strong></label></p>';
+            echo '<textarea id="sh_tl_gallery_urls" name="sh_tl_gallery_urls" rows="3" style="width:100%" placeholder="https://.../a.jpg, https://.../b.jpg">' . esc_textarea( $gallery_urls ) . '</textarea>';
+            echo '<p class="description">' . esc_html__( 'Optional: comma-separated or JSON array of image URLs.', 'sh-timeline' ) . '</p>';
         }
 
         public function save_step_meta( $post_id ) {
@@ -430,6 +443,14 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
             if ( isset( $_POST['sh_tl_step_number'] ) ) {
                 $num = intval( $_POST['sh_tl_step_number'] );
                 update_post_meta( $post_id, '_sh_tl_step_number', $num );
+            }
+            if ( isset( $_POST['sh_tl_gallery_ids'] ) ) {
+                $ids = sanitize_text_field( wp_unslash( $_POST['sh_tl_gallery_ids'] ) );
+                update_post_meta( $post_id, '_sh_tl_gallery_ids', $ids );
+            }
+            if ( isset( $_POST['sh_tl_gallery_urls'] ) ) {
+                $urls = wp_kses_post( wp_unslash( $_POST['sh_tl_gallery_urls'] ) );
+                update_post_meta( $post_id, '_sh_tl_gallery_urls', $urls );
             }
         }
 
@@ -473,6 +494,7 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
 
             wp_enqueue_style( 'sh-timeline-style' );
             wp_enqueue_script( 'sh-timeline-inview' );
+            wp_enqueue_script( 'sh-timeline-slider' );
 
             ob_start();
             echo '<section class="sh-ct" aria-label="Construction Timeline">';
@@ -499,6 +521,41 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                     $img_alt = $alt ? $alt : $title;
                 }
 
+                // Build gallery arrays from meta
+                $gallery_ids_meta  = get_post_meta( $post_id, '_sh_tl_gallery_ids', true );
+                $gallery_urls_meta = get_post_meta( $post_id, '_sh_tl_gallery_urls', true );
+                $gallery_ids_arr   = array();
+                $gallery_urls_arr  = array();
+
+                if ( ! empty( $gallery_ids_meta ) ) {
+                    $parts = array_filter( array_map( 'trim', explode( ',', (string) $gallery_ids_meta ) ) );
+                    foreach ( $parts as $pid ) {
+                        $int_id = intval( $pid );
+                        if ( $int_id > 0 ) {
+                            $gallery_ids_arr[] = $int_id;
+                        }
+                    }
+                }
+                if ( ! empty( $gallery_urls_meta ) ) {
+                    $raw = trim( (string) $gallery_urls_meta );
+                    $decoded = json_decode( $raw, true );
+                    if ( is_array( $decoded ) ) {
+                        foreach ( $decoded as $u ) {
+                            $u = trim( (string) $u );
+                            if ( $u !== '' ) {
+                                $gallery_urls_arr[] = esc_url_raw( $u );
+                            }
+                        }
+                    } else {
+                        $parts = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
+                        foreach ( $parts as $u ) {
+                            if ( $u !== '' ) {
+                                $gallery_urls_arr[] = esc_url_raw( $u );
+                            }
+                        }
+                    }
+                }
+
                 $side_class = ( $i % 2 === 1 ) ? 'sh-ct-item--odd' : 'sh-ct-item--even';
 
                 echo '<article class="sh-ct-item ' . esc_attr( $side_class ) . '" aria-labelledby="ct-title-' . esc_attr( $post_id ) . '">';
@@ -508,13 +565,33 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                 echo '<h3 id="ct-title-' . esc_attr( $post_id ) . '" class="sh-ct-title">' . esc_html( $title ) . '</h3>';
                 echo '</header>';
 
-                if ( ! empty( $img_src ) ) {
+                // Render gallery first if available
+                if ( ! empty( $gallery_ids_arr ) || ! empty( $gallery_urls_arr ) ) {
+                    echo '<div class="sh-tl-gallery" data-autoplay="1" data-interval="3500">';
+                    foreach ( $gallery_ids_arr as $gid ) {
+                        $gsrc = wp_get_attachment_image_src( $gid, 'large' );
+                        if ( $gsrc && is_array( $gsrc ) ) {
+                            $galt = get_post_meta( $gid, '_wp_attachment_image_alt', true );
+                            $galt = $galt ? $galt : $title;
+                            echo '<div class="sh-tl-slide"><img src="' . esc_url( $gsrc[0] ) . '" alt="' . esc_attr( $galt ) . '" loading="lazy"></div>';
+                        }
+                    }
+                    foreach ( $gallery_urls_arr as $gurl ) {
+                        $galt = $title ? $title : 'Timeline image';
+                        echo '<div class="sh-tl-slide"><img src="' . esc_url( $gurl ) . '" alt="' . esc_attr( $galt ) . '" loading="lazy"></div>';
+                    }
+                    echo '</div>';
+                } elseif ( ! empty( $img_src ) ) {
                     echo '<figure class="sh-ct-figure">';
                     echo '<img src="' . esc_url( $img_src ) . '" alt="' . esc_attr( $img_alt ) . '">';
                     echo '</figure>';
                 }
 
-                echo '<div class="sh-ct-text">' . $content . '</div>';
+                // Description: render only when non-empty
+                $content_plain = trim( wp_strip_all_tags( $content ) );
+                if ( ! empty( $content_plain ) ) {
+                    echo '<div class="sh-ct-text">' . $content . '</div>';
+                }
                 echo '</div>';
                 echo '</article>';
             }
