@@ -58,6 +58,7 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                 array(
                     'items'        => '',
                     'accent_color' => '',
+                    'autoplay_ms'  => '3500',
                 ),
                 $atts,
                 'sh_timeline'
@@ -96,6 +97,11 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                 $accent_style = ' style="--tl-accent:' . esc_attr( $accent ) . '"';
             }
 
+            $interval_ms = intval( $atts['autoplay_ms'] );
+            if ( $interval_ms < 1000 ) {
+                $interval_ms = 3500;
+            }
+
             ob_start();
             echo '<div class="sh-timeline"' . $accent_style . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
             echo '<div class="sh-tl">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -111,6 +117,7 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                 $image_id    = isset( $item['image'] ) ? intval( $item['image'] ) : 0;
                 $image_url   = '';
                 $gallery_ids = array();
+                $gallery_urls = array();
 
                 // Parse gallery (WPBakery attach_images returns comma-separated IDs)
                 if ( isset( $item['gallery'] ) && ! empty( $item['gallery'] ) ) {
@@ -121,6 +128,27 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                             $int_id = intval( $pid );
                             if ( $int_id > 0 ) {
                                 $gallery_ids[] = $int_id;
+                            }
+                        }
+                    }
+                }
+
+                // Parse gallery URLs (shortcode-friendly). Accept JSON array or comma-separated URLs.
+                if ( isset( $item['gallery_urls'] ) && ! empty( $item['gallery_urls'] ) ) {
+                    $raw = trim( (string) $item['gallery_urls'] );
+                    $decoded = json_decode( $raw, true );
+                    if ( is_array( $decoded ) ) {
+                        foreach ( $decoded as $u ) {
+                            $u = trim( (string) $u );
+                            if ( $u !== '' ) {
+                                $gallery_urls[] = esc_url_raw( $u );
+                            }
+                        }
+                    } else {
+                        $parts = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
+                        foreach ( $parts as $u ) {
+                            if ( $u !== '' ) {
+                                $gallery_urls[] = esc_url_raw( $u );
                             }
                         }
                     }
@@ -155,8 +183,8 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                 echo '</div>';
 
                 // Gallery (takes precedence if provided), else single image
-                if ( ! empty( $gallery_ids ) ) {
-                    echo '<div class="sh-tl-gallery" data-autoplay="1" data-interval="3500">';
+                if ( ! empty( $gallery_ids ) || ! empty( $gallery_urls ) ) {
+                    echo '<div class="sh-tl-gallery" data-autoplay="1" data-interval="' . esc_attr( (string) $interval_ms ) . '">';
                     foreach ( $gallery_ids as $g_id ) {
                         $src = wp_get_attachment_image_src( $g_id, 'large' );
                         if ( $src && is_array( $src ) ) {
@@ -164,6 +192,10 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                             $alt_out  = ! empty( $alt_text ) ? $alt_text : ( ! empty( $title ) ? $title : 'Timeline image' );
                             echo '<div class="sh-tl-slide"><img src="' . esc_url( $src[0] ) . '" alt="' . esc_attr( $alt_out ) . '" loading="lazy"></div>';
                         }
+                    }
+                    foreach ( $gallery_urls as $g_url ) {
+                        $alt_out  = ! empty( $title ) ? $title : 'Timeline image';
+                        echo '<div class="sh-tl-slide"><img src="' . esc_url( $g_url ) . '" alt="' . esc_attr( $alt_out ) . '" loading="lazy"></div>';
                     }
                     echo '</div>';
                 } elseif ( ! empty( $image_url ) ) {
@@ -232,6 +264,12 @@ if ( ! class_exists( 'Sh_Timeline_Plugin' ) ) {
                                 'heading'     => __( 'Gallery (optional, multiple)', 'sh-timeline' ),
                                 'param_name'  => 'gallery',
                                 'description' => __( 'Select multiple images to show as an auto-sliding gallery.', 'sh-timeline' ),
+                            ),
+                            array(
+                                'type'        => 'textfield',
+                                'heading'     => __( 'Gallery URLs (optional)', 'sh-timeline' ),
+                                'param_name'  => 'gallery_urls',
+                                'description' => __( 'Comma-separated or JSON array of image URLs (for shortcode use).', 'sh-timeline' ),
                             ),
                         ),
                     ),
