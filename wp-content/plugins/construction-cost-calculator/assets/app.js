@@ -94,11 +94,79 @@
       if(e.target.matches('.constructo-package')){ recalc(); }
       if(e.target.matches('.constructo-floor')){ renderBuiltupInputs(); recalc(); }
     });
+    function buildWhatsAppMessage(){
+      var data = window.CONSTRUCTION_CALC || {};
+      var packages = data.packages || {};
+      var selectedPackageKey = container.querySelector('.constructo-package')?.value || '';
+      var selectedPackageRate = getPackageRate(packages, selectedPackageKey);
+      var selectedPackageLabel = container.querySelector('.constructo-package option:checked')?.textContent || selectedPackageKey;
+
+      var floors = parseInt(container.querySelector('.constructo-floor')?.value || '0', 10);
+      var totalFloors = 1 + (isFinite(floors)?floors:0);
+
+      var lines = [];
+      lines.push('Architectural Construction Cost Calculator 2025 (Tamilnadu)');
+      lines.push('Package: ' + selectedPackageLabel);
+      lines.push('Floors: Ground + ' + floors);
+
+      // Built-up details
+      var builtRow = container.querySelector('.constructo-row[data-key="builtup"]');
+      if(builtRow){
+        var inputs = Array.from(builtRow.querySelectorAll('input[type="number"]'));
+        var labels = [];
+        var qty = 0;
+        for(var i=0;i<inputs.length;i++){
+          var val = parseFloat(inputs[i].value || '0') || 0;
+          qty += val;
+          labels.push((i===0? 'Ground' : (ordinal(i) + ' Floor')) + ': ' + val + ' sqft');
+        }
+        var cost = qty * selectedPackageRate;
+        if(qty>0){
+          lines.push('- Built-up Area: ' + labels.join(', '));
+          lines.push('  @ Rs.' + selectedPackageRate + '/sqft = ' + formatCurrency(cost));
+        }
+      }
+
+      // Other rows
+      container.querySelectorAll('.constructo-row[data-key]').forEach(function(row){
+        var key = row.getAttribute('data-key');
+        if(key === 'builtup'){ return; }
+        var name = row.querySelector('.c-col.work')?.textContent.trim() || key;
+        var rateKey = row.getAttribute('data-rate-key');
+        var rateValue = rateKey === 'package' ? selectedPackageRate : ((data.rates||{})[rateKey] || 0);
+        var unit = row.querySelector('.c-col.unit')?.textContent.trim() || '';
+        var inputs = Array.from(row.querySelectorAll('input[type="number"]'));
+        var qty = 0;
+        var detail = '';
+        if(row.getAttribute('data-math') === 'product'){
+          var a = parseFloat(inputs[0]?.value || '0') || 0;
+          var b = parseFloat(inputs[1]?.value || '0') || 0;
+          qty = a * b;
+          if(a>0 || b>0){ detail = a + ' x ' + b + ' = ' + qty + ' ' + unit; }
+        } else {
+          qty = inputs.reduce(function(acc, el){ var v = parseFloat(el.value||'0')||0; return acc+v; }, 0);
+          if(qty>0){ detail = qty + ' ' + unit; }
+        }
+        if(qty>0){
+          var cost = qty * rateValue;
+          lines.push('- ' + name + ': ' + detail);
+          lines.push('  @ Rs.' + rateValue + ' = ' + formatCurrency(cost));
+        }
+      });
+
+      var totalText = container.querySelector('[data-total]')?.textContent || '';
+      if(totalText){ lines.push('Total: ' + totalText); }
+      return lines.join('\n');
+    }
+
     var openBtn = container.querySelector('.constructo-button');
     if(openBtn){
       openBtn.addEventListener('click', function(e){
         e.preventDefault();
-        alert('Thanks! We will contact you soon.');
+        var phone = '916382088988';
+        var msg = buildWhatsAppMessage();
+        var url = 'https://api.whatsapp.com/send?phone=' + phone + '&text=' + encodeURIComponent(msg);
+        window.open(url, '_blank', 'noopener');
       });
     }
     renderBuiltupInputs();
