@@ -1,0 +1,8 @@
+.cc-admin-form .cc-admin-list{background:#fff;border:1px solid #dcdcdc;border-radius:8px;padding:10px;margin:8px 0}
+.cc-admin-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.cc-admin-items{display:flex;flex-direction:column;gap:8px}
+.cc-item{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr auto;gap:8px;align-items:center;border:1px solid #eee;border-radius:6px;padding:8px;background:#fafafa}
+.cc-item input[type=text],.cc-item input[type=number],.cc-item select{width:100%}
+.cc-item .cc-actions button{margin-left:6px}
+.cc-section-title{font-weight:700;margin:10px 0}
+
