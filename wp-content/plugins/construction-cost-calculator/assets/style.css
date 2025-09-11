@@ -1,0 +1,19 @@
+.constructo-wrapper{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:#222}
+.constructo-header{text-align:center;margin:40px 0 20px}
+.constructo-header h2{font-weight:800;letter-spacing:.3px;margin:0 0 6px}
+.constructo-controls{display:flex;gap:16px;justify-content:center;margin:10px 0 20px}
+.constructo-controls label{display:flex;align-items:center;gap:10px;font-weight:600}
+.constructo-controls select{padding:8px 10px;border:1px solid #ccc;border-radius:6px}
+
+.constructo-table{border:1px solid #d6d6d6;border-radius:6px;overflow:hidden;margin:10px auto;max-width:1100px}
+.constructo-row{display:grid;grid-template-columns:2fr 1.2fr .6fr .6fr .8fr;align-items:center;border-bottom:1px solid #eee}
+.constructo-row:last-child{border-bottom:none}
+.constructo-row > .c-col{padding:14px 16px}
+.constructo-head{background:#f8f8f8;font-weight:700}
+.constructo-row input[type=number]{width:100%;padding:10px;border:1px solid #ccc;border-radius:6px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.constructo-total{background:#fafafa;font-weight:800}
+.constructo-cta{text-align:center;margin:24px 0 10px}
+.constructo-button{display:inline-block;background:#f1c04e;color:#222;text-decoration:none;padding:14px 22px;border-radius:28px;font-weight:800}
+.constructo-button:hover{filter:brightness(.95)}
+
