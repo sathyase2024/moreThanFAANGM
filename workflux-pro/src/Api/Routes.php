@@ -227,6 +227,31 @@ class Routes
             'permission_callback' => function () { return current_user_can('wfp_view_reports') || current_user_can('wfp_manage_projects'); },
             'args' => [ 'user_id' => [ 'type' => 'integer', 'required' => false ], 'project_id' => [ 'type' => 'integer', 'required' => false ] ],
         ]);
+
+        // Attendance report (hierarchical)
+        register_rest_route('wfp/v1', '/reports/attendance', [
+            'methods' => 'GET',
+            'callback' => [self::class, 'getAttendanceReport'],
+            'permission_callback' => function () { return current_user_can('wfp_view_reports') || current_user_can('wfp_manage_employees') || current_user_can('read'); },
+            'args' => [
+                'user_id' => [ 'type' => 'integer', 'required' => false ],
+                'from' => [ 'type' => 'string', 'required' => false ],
+                'to' => [ 'type' => 'string', 'required' => false ],
+            ],
+        ]);
+
+        // Time logs detailed report (hierarchical)
+        register_rest_route('wfp/v1', '/reports/time-logs', [
+            'methods' => 'GET',
+            'callback' => [self::class, 'getTimeLogsDetailed'],
+            'permission_callback' => function () { return current_user_can('wfp_view_reports') || current_user_can('wfp_manage_projects') || current_user_can('read'); },
+            'args' => [
+                'user_id' => [ 'type' => 'integer', 'required' => false ],
+                'project_id' => [ 'type' => 'integer', 'required' => false ],
+                'from' => [ 'type' => 'string', 'required' => false ],
+                'to' => [ 'type' => 'string', 'required' => false ],
+            ],
+        ]);
     }
 
     public static function getDashboardSummary(\WP_REST_Request $req)
@@ -394,6 +419,61 @@ class Routes
         if ($project_id) { $where .= ' AND t.project_id = %d'; $params[] = $project_id; }
         $sql = $wpdb->prepare("SELECT t.project_id, SUM(l.duration_minutes) AS minutes FROM $t l JOIN $tasks t ON t.id = l.task_id WHERE $where GROUP BY t.project_id", $params);
         $rows = $wpdb->get_results($sql, ARRAY_A);
+        return ['items' => $rows ?: []];
+    }
+
+    private static function isManagement(): bool
+    {
+        return current_user_can('wfp_view_reports') || current_user_can('wfp_manage_projects') || current_user_can('wfp_manage_employees') || current_user_can('wfp_manage_settings') || current_user_can('manage_options');
+    }
+
+    public static function getAttendanceReport(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_attendance';
+        $user_id = (int) $req->get_param('user_id');
+        $from = $req->get_param('from');
+        $to = $req->get_param('to');
+        $current = get_current_user_id();
+
+        if (!self::isManagement()) {
+            // Employees can only view their own
+            $user_id = $current;
+        }
+
+        $where = '1=1'; $params = [];
+        if ($user_id) { $where .= ' AND a.user_id = %d'; $params[] = $user_id; }
+        if ($from) { $where .= ' AND a.clock_in >= %s'; $params[] = $from; }
+        if ($to) { $where .= ' AND (a.clock_out IS NULL OR a.clock_out <= %s)'; $params[] = $to; }
+        $sql = "SELECT a.id, a.user_id, u.display_name AS user_name, a.clock_in, a.clock_out, a.activity
+                FROM $t a JOIN {$wpdb->users} u ON u.ID = a.user_id
+                WHERE $where ORDER BY a.id DESC LIMIT 500";
+        $rows = $wpdb->get_results($wpdb->prepare($sql, $params), ARRAY_A);
+        return ['items' => $rows ?: []];
+    }
+
+    public static function getTimeLogsDetailed(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_time_logs'; $tasks = $wpdb->prefix . 'wfp_tasks'; $projects = $wpdb->prefix . 'wfp_projects';
+        $user_id = (int) $req->get_param('user_id');
+        $project_id = (int) $req->get_param('project_id');
+        $from = $req->get_param('from');
+        $to = $req->get_param('to');
+        $current = get_current_user_id();
+
+        if (!self::isManagement()) {
+            $user_id = $current;
+        }
+
+        $where = '1=1'; $params = [];
+        if ($user_id) { $where .= ' AND l.user_id = %d'; $params[] = $user_id; }
+        if ($project_id) { $where .= ' AND t.project_id = %d'; $params[] = $project_id; }
+        if ($from) { $where .= ' AND l.started_at >= %s'; $params[] = $from; }
+        if ($to) { $where .= ' AND (l.ended_at IS NULL OR l.ended_at <= %s)'; $params[] = $to; }
+        $sql = "SELECT l.id, l.user_id, u.display_name AS user_name, l.task_id, t.title AS task_title, t.project_id, p.name AS project_name,
+                       l.started_at, l.ended_at, l.duration_minutes
+                FROM $t l JOIN $tasks t ON t.id = l.task_id JOIN $projects p ON p.id = t.project_id JOIN {$wpdb->users} u ON u.ID = l.user_id
+                WHERE $where ORDER BY l.id DESC LIMIT 1000";
+        $rows = $wpdb->get_results($wpdb->prepare($sql, $params), ARRAY_A);
         return ['items' => $rows ?: []];
     }
 

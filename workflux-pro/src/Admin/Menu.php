@@ -139,7 +139,18 @@ class Menu
 
     public static function renderReports(): void
     {
-        echo '<div class="wrap"><h1>Reports</h1><div id="wfp-admin-reports"></div></div>';
+        echo '<div class="wrap"><h1>Reports</h1>';
+        echo '<div id="wfp-reports-filters" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap">'
+           . '<select id="wfp-filter-user"><option value="">Select user</option></select>'
+           . '<input type="date" id="wfp-filter-from" />'
+           . '<input type="date" id="wfp-filter-to" />'
+           . '<button class="button" id="wfp-run-report">Run</button>'
+           . '</div>';
+        echo '<h2>Attendance</h2>';
+        echo '<table class="widefat fixed striped"><thead><tr><th>User</th><th>Clock In</th><th>Clock Out</th><th>Activity</th></tr></thead><tbody id="wfp-report-attendance"><tr><td colspan="4">Use filters and run</td></tr></tbody></table>';
+        echo '<h2 style="margin-top:20px">Project Time Logs</h2>';
+        echo '<table class="widefat fixed striped"><thead><tr><th>User</th><th>Project</th><th>Task</th><th>Start</th><th>End</th><th>Minutes</th></tr></thead><tbody id="wfp-report-time"><tr><td colspan="6">Use filters and run</td></tr></tbody></table>';
+        echo '</div>';
     }
 
     public static function renderSettings(): void
