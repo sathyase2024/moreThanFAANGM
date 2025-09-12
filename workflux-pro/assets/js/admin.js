@@ -5,7 +5,17 @@
   function api(path, opts){
     opts = opts || {};
     opts.headers = Object.assign({ 'X-WP-Nonce': WFP_ADMIN.rest.nonce }, opts.headers || {});
-    return fetch(WFP_ADMIN.rest.root + path, opts).then(function(r){return r.json()});
+    return fetch(WFP_ADMIN.rest.root + path, opts).then(function(r){
+      var ct = r.headers.get('content-type') || '';
+      if (!r.ok) {
+        if (ct.indexOf('application/json') !== -1) {
+          return r.json().then(function(j){ throw (j && (j.message || j.code)) || ('HTTP '+r.status); });
+        }
+        return r.text().then(function(t){ throw t || ('HTTP '+r.status); });
+      }
+      if (ct.indexOf('application/json') !== -1) return r.json();
+      return r.text();
+    });
   }
 
   function renderAttendance(){
@@ -29,6 +39,20 @@
     }).catch(function(){
       body.innerHTML = '<tr><td colspan="3">Failed to load</td></tr>';
     });
+  }
+
+  function renderMyTasks(){
+    var body = document.getElementById('wfp-my-tasks');
+    if(!body) return;
+    api('tasks?mine=1').then(function(data){
+      body.innerHTML = '';
+      (data.items||[]).forEach(function(t){
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>'+t.id+'</td><td>'+t.project_id+'</td><td>'+t.title+'</td><td>'+t.status+'</td>'+
+          '<td><button class="button" data-start-task="'+t.id+'">Start</button> <button class="button" data-stop-task="'+t.id+'">Stop</button></td>';
+        body.appendChild(tr);
+      });
+    }).catch(function(){ body.innerHTML = '<tr><td colspan="5">Failed to load</td></tr>'; });
   }
 
   function renderLeaves(){
@@ -160,7 +184,9 @@
       pForm.addEventListener('submit', function(e){
         e.preventDefault();
         var data = new FormData(pForm); var payload = {}; data.forEach(function(v,k){ payload[k]=v; });
-        api('projects', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }).then(function(){ renderProjects(); });
+        api('projects', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+          .then(function(){ renderProjects(); })
+          .catch(function(err){ alert('Create project failed: '+ err); });
       });
     }
 
@@ -168,7 +194,9 @@
       tForm.addEventListener('submit', function(e){
         e.preventDefault();
         var data = new FormData(tForm); var payload = {}; data.forEach(function(v,k){ payload[k]=v; });
-        api('tasks', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }).then(function(){ renderProjects(); });
+        api('tasks', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+          .then(function(){ renderProjects(); })
+          .catch(function(err){ alert('Create task failed: '+ err); });
       });
     }
 
@@ -192,7 +220,7 @@
           tr.innerHTML = '<td>'+ projectId +'</td><td>'+ m.user_id +'</td><td>'+(m.role||'-')+'</td><td><button class="button" data-remove-member="'+projectId+':'+m.user_id+'">Remove</button></td>';
           mBody.appendChild(tr);
         });
-      });
+      }).catch(function(err){ mBody.innerHTML = '<tr><td colspan="4">Failed to load members: '+err+'</td></tr>'; });
     }
   }
 
@@ -307,8 +335,25 @@
     }).then(function(){ renderAttendance(); });
   }
 
+  function onTaskClick(e){
+    var a = e.target;
+    if (a.matches('[data-start-task]')){
+      var id = a.getAttribute('data-start-task');
+      api('time-logs/start', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ task_id: parseInt(id,10) }) })
+        .then(function(){ a.disabled=true; setTimeout(function(){ a.disabled=false; }, 800); })
+        .catch(function(err){ alert('Start failed: '+err); });
+    }
+    if (a.matches('[data-stop-task]')){
+      var id2 = a.getAttribute('data-stop-task');
+      api('time-logs/stop', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ task_id: parseInt(id2,10) }) })
+        .then(function(){ a.disabled=true; setTimeout(function(){ a.disabled=false; }, 800); })
+        .catch(function(err){ alert('Stop failed: '+err); });
+    }
+  }
+
   document.addEventListener('click', onClick);
   document.addEventListener('click', onAdminClick);
+  document.addEventListener('click', onTaskClick);
   renderAttendance();
   renderLeaves();
   renderEmployees();
@@ -316,5 +361,6 @@
   renderSettings();
   populateUsers();
   runReports();
+  renderMyTasks();
 })();
 

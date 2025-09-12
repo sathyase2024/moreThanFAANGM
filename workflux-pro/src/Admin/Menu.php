@@ -187,6 +187,8 @@ class Menu
         echo '<div class="wfp-log" id="wfp-log"></div>';
         echo '<h2>My Attendance</h2>';
         echo '<table class="widefat fixed striped"><thead><tr><th>Date In</th><th>Date Out</th><th>Activity</th></tr></thead><tbody id="wfp-attendance-body"><tr><td colspan="3">Loading...</td></tr></tbody></table>';
+        echo '<h2 style="margin-top:20px">My Tasks</h2>';
+        echo '<table class="widefat fixed striped"><thead><tr><th>ID</th><th>Project</th><th>Title</th><th>Status</th><th>Timer</th></tr></thead><tbody id="wfp-my-tasks"><tr><td colspan="5">Loading...</td></tr></tbody></table>';
         // Reuse frontend script for actions
         wp_enqueue_script('wfp-admin');
         echo '</div>';
