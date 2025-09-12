@@ -2,8 +2,9 @@
 /**
  * Plugin Name: WorkFlux Pro
  * Description: Workforce and project management plugin with roles, attendance, leaves, projects, tasks, and dashboards.
- * Version: 0.1.0
- * Author: Sri Hayavadhana
+ * Version: 0.2.0
+ * Author: Nagarajarao
+ * Author URI: https://www.srihayavadhana.com
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Text Domain: workflux-pro
@@ -13,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('WFP_VERSION', '0.1.0');
+define('WFP_VERSION', '0.2.0');
 define('WFP_PLUGIN_FILE', __FILE__);
 define('WFP_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WFP_PLUGIN_URL', plugin_dir_url(__FILE__));

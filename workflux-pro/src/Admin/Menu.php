@@ -76,7 +76,11 @@ class Menu
 
     public static function renderDashboard(): void
     {
-        echo '<div class="wrap"><h1>WorkFlux Pro</h1><div id="wfp-admin-dashboard"></div></div>';
+        $version = defined('WFP_VERSION') ? WFP_VERSION : 'unknown';
+        $vcode = (int) get_option('wfp_version_code', 1);
+        echo '<div class="wrap"><h1>WorkFlux Pro</h1>';
+        echo '<p>Version: ' . esc_html($version) . ' (Code: ' . esc_html((string)$vcode) . ')</p>';
+        echo '<div id="wfp-admin-dashboard"></div></div>';
     }
 
     public static function renderEmployees(): void

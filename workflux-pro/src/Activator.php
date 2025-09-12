@@ -12,7 +12,13 @@ class Activator
     {
         self::createRolesAndCapabilities();
         self::createTables();
-        add_option('wfp_version', WFP_VERSION);
+        $prev = get_option('wfp_version');
+        $code = (int) get_option('wfp_version_code', 0);
+        if ($prev !== WFP_VERSION) {
+            $code = $code + 1;
+            update_option('wfp_version_code', $code);
+            update_option('wfp_version', WFP_VERSION);
+        }
     }
 
     private static function createRolesAndCapabilities(): void
