@@ -80,6 +80,14 @@ class Menu
         $vcode = (int) get_option('wfp_version_code', 1);
         echo '<div class="wrap"><h1>WorkFlux Pro</h1>';
         echo '<p>Version: ' . esc_html($version) . ' (Code: ' . esc_html((string)$vcode) . ')</p>';
+        $demo = get_option('wfp_demo_info');
+        if (is_array($demo) && !empty($demo)) {
+            echo '<div class="notice notice-info" style="padding:12px;margin:12px 0"><strong>Demo accounts</strong><br/>';
+            foreach ($demo as $role => $info) {
+                echo esc_html($role) . ': login <code>' . esc_html($info['login']) . '</code>, password <code>' . esc_html($info['password']) . '</code><br/>';
+            }
+            echo '</div>';
+        }
         echo '<div id="wfp-admin-dashboard"></div></div>';
     }
 

@@ -19,6 +19,7 @@ class Activator
             update_option('wfp_version_code', $code);
             update_option('wfp_version', WFP_VERSION);
         }
+        self::seedDemoData();
     }
 
     private static function createRolesAndCapabilities(): void
@@ -181,6 +182,114 @@ class Activator
         foreach ($sql as $statement) {
             dbDelta($statement);
         }
+    }
+
+    private static function seedDemoData(): void
+    {
+        if (get_option('wfp_demo_seeded')) {
+            return;
+        }
+
+        $demo_password = 'DemoPass123!';
+        $created = [];
+        $users_to_create = [
+            ['login' => 'demo_owner', 'role' => 'wfp_owner', 'email' => 'demo_owner@example.com', 'name' => 'Demo Owner'],
+            ['login' => 'demo_hr', 'role' => 'wfp_manager', 'email' => 'demo_hr@example.com', 'name' => 'Demo HR'],
+            ['login' => 'demo_manager', 'role' => 'wfp_managing_head', 'email' => 'demo_manager@example.com', 'name' => 'Demo Manager'],
+            ['login' => 'demo_admin', 'role' => 'wfp_project_admin', 'email' => 'demo_admin@example.com', 'name' => 'Demo Project Admin'],
+            ['login' => 'demo_employee', 'role' => 'wfp_employee', 'email' => 'demo_employee@example.com', 'name' => 'Demo Employee'],
+        ];
+
+        foreach ($users_to_create as $uinfo) {
+            $user = get_user_by('login', $uinfo['login']);
+            if (!$user) {
+                $uid = wp_insert_user([
+                    'user_login' => $uinfo['login'],
+                    'user_pass' => $demo_password,
+                    'user_email' => $uinfo['email'],
+                    'display_name' => $uinfo['name'],
+                    'role' => $uinfo['role'],
+                ]);
+                if (!is_wp_error($uid)) {
+                    $user = get_user_by('ID', $uid);
+                }
+            }
+            if ($user instanceof \WP_User) {
+                $user->set_role($uinfo['role']);
+                update_user_meta($user->ID, 'wfp_status', 'active');
+                if ($uinfo['role'] === 'wfp_employee') {
+                    update_user_meta($user->ID, 'wfp_employee_type', 'Developer');
+                }
+                $created[$uinfo['role']] = [
+                    'login' => $uinfo['login'],
+                    'password' => $demo_password,
+                    'user_id' => $user->ID,
+                ];
+            }
+        }
+
+        global $wpdb;
+        $projects = $wpdb->prefix . 'wfp_projects';
+        $tasks = $wpdb->prefix . 'wfp_tasks';
+        $members = $wpdb->prefix . 'wfp_project_members';
+        $attendance = $wpdb->prefix . 'wfp_attendance';
+        $time_logs = $wpdb->prefix . 'wfp_time_logs';
+
+        $owner_id = isset($created['wfp_owner']['user_id']) ? (int) $created['wfp_owner']['user_id'] : get_current_user_id();
+        $employee_id = isset($created['wfp_employee']['user_id']) ? (int) $created['wfp_employee']['user_id'] : 0;
+
+        $wpdb->insert($projects, [
+            'name' => 'Demo Project Alpha',
+            'description' => 'Sample project to try WorkFlux Pro',
+            'deadline' => null,
+            'status' => 'active',
+            'created_by' => $owner_id ?: 1,
+        ]);
+        $project_id = (int) $wpdb->insert_id;
+
+        if ($project_id && $employee_id) {
+            $wpdb->replace($members, [
+                'project_id' => $project_id,
+                'user_id' => $employee_id,
+                'role' => 'Developer',
+            ]);
+
+            $wpdb->insert($tasks, [
+                'project_id' => $project_id,
+                'assignee_id' => $employee_id,
+                'title' => 'Initial Setup',
+                'description' => 'Clone repo and prepare environment',
+                'priority' => 'normal',
+                'due_date' => null,
+                'status' => 'todo',
+            ]);
+            $task_id = (int) $wpdb->insert_id;
+
+            $now = current_time('timestamp');
+            $in = date('Y-m-d 09:15:00', $now);
+            $out = date('Y-m-d 17:30:00', $now);
+            $wpdb->insert($attendance, [
+                'user_id' => $employee_id,
+                'clock_in' => $in,
+                'clock_out' => $out,
+                'activity' => 'Demo workday',
+            ]);
+
+            $start = date('Y-m-d 10:00:00', $now);
+            $end = date('Y-m-d 12:00:00', $now);
+            $duration = 120;
+            $wpdb->insert($time_logs, [
+                'task_id' => $task_id,
+                'user_id' => $employee_id,
+                'started_at' => $start,
+                'ended_at' => $end,
+                'duration_minutes' => $duration,
+                'note' => 'Demo log',
+            ]);
+        }
+
+        update_option('wfp_demo_seeded', 1);
+        update_option('wfp_demo_info', $created);
     }
 }
 
