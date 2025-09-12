@@ -78,7 +78,7 @@ class Activator
         }
     }
 
-    private static function createTables(): void
+    public static function createTables(): void
     {
         global $wpdb;
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -90,6 +90,7 @@ class Activator
         $projects = $wpdb->prefix . 'wfp_projects';
         $tasks = $wpdb->prefix . 'wfp_tasks';
         $time_logs = $wpdb->prefix . 'wfp_time_logs';
+        $project_members = $wpdb->prefix . 'wfp_project_members';
 
         $sql = [];
 
@@ -156,6 +157,18 @@ class Activator
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY  (id),
             KEY task_id (task_id),
+            KEY user_id (user_id)
+        ) $charset_collate;";
+
+        $sql[] = "CREATE TABLE $project_members (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            project_id BIGINT UNSIGNED NOT NULL,
+            user_id BIGINT UNSIGNED NOT NULL,
+            role VARCHAR(50) NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            UNIQUE KEY project_user_unique (project_id, user_id),
+            KEY project_id (project_id),
             KEY user_id (user_id)
         ) $charset_collate;";
 

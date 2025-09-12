@@ -104,6 +104,46 @@
     }
   }
 
+  function renderEmployees(){
+    var body = document.getElementById('wfp-employees-body');
+    if(!body) return;
+    api('employees').then(function(data){
+      var items = (data && data.items) ? data.items : [];
+      body.innerHTML = '';
+      if(items.length === 0){
+        var tr = document.createElement('tr');
+        var td = document.createElement('td'); td.colSpan = 5; td.textContent = 'No users'; tr.appendChild(td); body.appendChild(tr); return;
+      }
+      items.forEach(function(u){
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + u.name + '</td>'+
+                       '<td>' + (u.email||'') + '</td>'+
+                       '<td><select data-emp-type="' + u.id + '"><option value="">-</option><option value="Tester"'+(u.type==='Tester'?' selected':'')+'>Tester</option><option value="Developer"'+(u.type==='Developer'?' selected':'')+'>Developer</option><option value="Designer"'+(u.type==='Designer'?' selected':'')+'>Designer</option></select></td>'+
+                       '<td><select data-emp-status="' + u.id + '"><option value="pending"'+(u.status==='pending'?' selected':'')+'>Pending</option><option value="active"'+(u.status==='active'?' selected':'')+'>Active</option><option value="disabled"'+(u.status==='disabled'?' selected':'')+'>Disabled</option></select></td>'+
+                       '<td><button class="button" data-emp-save="' + u.id + '">Save</button></td>';
+        body.appendChild(tr);
+      });
+    });
+  }
+
+  function onAdminClick(e){
+    var a = e.target;
+    if (a.matches('[data-leave-approve]')){
+      var id = a.getAttribute('data-leave-approve');
+      api('leaves/'+id, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'approved'}) }).then(function(){ renderLeaves(); });
+    }
+    if (a.matches('[data-leave-reject]')){
+      var idr = a.getAttribute('data-leave-reject');
+      api('leaves/'+idr, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'rejected'}) }).then(function(){ renderLeaves(); });
+    }
+    if (a.matches('[data-emp-save]')){
+      var uid = a.getAttribute('data-emp-save');
+      var typeSel = document.querySelector('[data-emp-type="'+uid+'"]');
+      var statusSel = document.querySelector('[data-emp-status="'+uid+'"]');
+      api('employees/'+uid, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type: typeSel ? typeSel.value : '', status: statusSel ? statusSel.value : 'pending' }) }).then(function(){ a.disabled=true; setTimeout(function(){ a.disabled=false; }, 600); });
+    }
+  }
+
   function onClick(e){
     var el = e.target.closest('[data-action]');
     if(!el) return;
@@ -117,7 +157,9 @@
   }
 
   document.addEventListener('click', onClick);
+  document.addEventListener('click', onAdminClick);
   renderAttendance();
   renderLeaves();
+  renderEmployees();
 })();
 

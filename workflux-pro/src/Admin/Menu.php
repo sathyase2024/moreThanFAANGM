@@ -81,7 +81,9 @@ class Menu
 
     public static function renderEmployees(): void
     {
-        echo '<div class="wrap"><h1>Employees</h1><div id="wfp-admin-employees"></div></div>';
+        echo '<div class="wrap"><h1>Employees</h1>';
+        echo '<table class="widefat fixed striped"><thead><tr><th>User</th><th>Email</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead><tbody id="wfp-employees-body"><tr><td colspan="5">Loading...</td></tr></tbody></table>';
+        echo '</div>';
     }
 
     public static function renderAttendance(): void

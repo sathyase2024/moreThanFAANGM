@@ -157,6 +157,42 @@ class Routes
             },
         ]);
 
+        // Employees management: list/update type and status
+        register_rest_route('wfp/v1', '/employees', [
+            'methods' => 'GET',
+            'callback' => [self::class, 'getEmployees'],
+            'permission_callback' => function () { return current_user_can('wfp_manage_employees'); },
+        ]);
+        register_rest_route('wfp/v1', '/employees/(?P<id>\\d+)', [
+            'methods' => 'POST',
+            'callback' => [self::class, 'updateEmployee'],
+            'permission_callback' => function () { return current_user_can('wfp_manage_employees'); },
+            'args' => [
+                'type' => [ 'type' => 'string', 'required' => false ],
+                'status' => [ 'type' => 'string', 'required' => false ],
+            ],
+        ]);
+
+        // Project membership
+        register_rest_route('wfp/v1', '/projects/(?P<id>\\d+)/members', [
+            [
+                'methods' => 'GET',
+                'callback' => [self::class, 'getProjectMembers'],
+                'permission_callback' => function () { return current_user_can('wfp_manage_projects'); },
+            ],
+            [
+                'methods' => 'POST',
+                'callback' => [self::class, 'addProjectMember'],
+                'permission_callback' => function () { return current_user_can('wfp_manage_projects'); },
+                'args' => [ 'user_id' => [ 'type' => 'integer', 'required' => true ], 'role' => [ 'type' => 'string', 'required' => false ] ],
+            ],
+        ]);
+        register_rest_route('wfp/v1', '/projects/(?P<id>\\d+)/members/(?P<user_id>\\d+)', [
+            'methods' => 'DELETE',
+            'callback' => [self::class, 'removeProjectMember'],
+            'permission_callback' => function () { return current_user_can('wfp_manage_projects'); },
+        ]);
+
         // Projects
         register_rest_route('wfp/v1', '/projects', [
             [
@@ -324,6 +360,64 @@ class Routes
     {
         $users = get_users(['fields' => ['ID', 'display_name']]);
         return array_map(function($u){ return ['id' => (int)$u->ID, 'name' => $u->display_name]; }, $users);
+    }
+
+    public static function getEmployees(\WP_REST_Request $req)
+    {
+        $users = get_users(['fields' => ['ID', 'display_name', 'user_email']]);
+        $rows = [];
+        foreach ($users as $u) {
+            $type = get_user_meta($u->ID, 'wfp_employee_type', true) ?: '';
+            $status = get_user_meta($u->ID, 'wfp_status', true) ?: 'pending';
+            $rows[] = [ 'id' => (int)$u->ID, 'name' => $u->display_name, 'email' => $u->user_email, 'type' => $type, 'status' => $status ];
+        }
+        return ['items' => $rows];
+    }
+
+    public static function updateEmployee(\WP_REST_Request $req)
+    {
+        $id = (int) $req->get_param('id');
+        if (get_user_by('ID', $id) === false) {
+            return new \WP_Error('wfp_no_user', __('User not found', 'workflux-pro'), ['status' => 404]);
+        }
+        if ($req->get_param('type') !== null) {
+            update_user_meta($id, 'wfp_employee_type', sanitize_text_field((string)$req->get_param('type')));
+        }
+        if ($req->get_param('status') !== null) {
+            $status = sanitize_text_field((string)$req->get_param('status'));
+            if (!in_array($status, ['active', 'pending', 'disabled'], true)) {
+                return new \WP_Error('wfp_bad_status', __('Invalid status', 'workflux-pro'), ['status' => 400]);
+            }
+            update_user_meta($id, 'wfp_status', $status);
+        }
+        return ['ok' => true];
+    }
+
+    public static function getProjectMembers(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_project_members';
+        $id = (int) $req->get_param('id');
+        $rows = $wpdb->get_results($wpdb->prepare("SELECT user_id, role FROM $t WHERE project_id = %d", $id), ARRAY_A);
+        return ['items' => $rows ?: []];
+    }
+
+    public static function addProjectMember(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_project_members';
+        $id = (int) $req->get_param('id');
+        $user_id = (int) $req->get_param('user_id');
+        $role = sanitize_text_field((string)$req->get_param('role'));
+        $wpdb->replace($t, [ 'project_id' => $id, 'user_id' => $user_id, 'role' => $role ?: null ]);
+        return ['ok' => true];
+    }
+
+    public static function removeProjectMember(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_project_members';
+        $id = (int) $req->get_param('id');
+        $user_id = (int) $req->get_param('user_id');
+        $wpdb->delete($t, [ 'project_id' => $id, 'user_id' => $user_id ]);
+        return ['ok' => true];
     }
 
     public static function getProjects(\WP_REST_Request $req)

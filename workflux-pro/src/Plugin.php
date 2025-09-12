@@ -17,6 +17,7 @@ class Plugin
         add_action('admin_menu', [Menu::class, 'register']);
         add_action('admin_enqueue_scripts', [Menu::class, 'enqueueAdminAssets']);
         add_filter('login_redirect', [$this, 'redirectAfterLogin'], 10, 3);
+        add_filter('authenticate', [$this, 'blockNonActiveUsers'], 30, 3);
     }
 
     public function redirectAfterLogin($redirect_to, $request, $user)
@@ -33,6 +34,17 @@ class Plugin
             return admin_url('admin.php?page=wfp-my-dashboard');
         }
         return $redirect_to;
+    }
+
+    public function blockNonActiveUsers($user, $username, $password)
+    {
+        if ($user instanceof \WP_User) {
+            $status = get_user_meta($user->ID, 'wfp_status', true);
+            if ($status && $status !== 'active') {
+                return new \WP_Error('wfp_not_active', __('Your account is not active. Please contact admin.', 'workflux-pro'));
+            }
+        }
+        return $user;
     }
 }
 
