@@ -111,7 +111,30 @@ class Menu
 
     public static function renderProjects(): void
     {
-        echo '<div class="wrap"><h1>Projects</h1><div id="wfp-admin-projects"></div></div>';
+        echo '<div class="wrap"><h1>Projects</h1>';
+        if (current_user_can('wfp_manage_projects')) {
+            echo '<form id="wfp-project-form" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap">'
+                . '<input type="text" name="name" placeholder="Project name" required />'
+                . '<input type="date" name="deadline" />'
+                . '<input type="text" name="description" placeholder="Description" />'
+                . '<button class="button button-primary" type="submit">Create</button>'
+                . '</form>';
+        }
+        echo '<table class="widefat fixed striped"><thead><tr><th>Name</th><th>Deadline</th><th>Status</th></tr></thead><tbody id="wfp-projects-body"><tr><td colspan="3">Loading...</td></tr></tbody></table>';
+        echo '<h2 style="margin-top:20px">Tasks</h2>';
+        if (current_user_can('wfp_manage_tasks') || current_user_can('wfp_manage_projects')) {
+            echo '<form id="wfp-task-form" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap">'
+                . '<input type="number" name="project_id" placeholder="Project ID" required />'
+                . '<input type="text" name="title" placeholder="Task title" required />'
+                . '<input type="text" name="description" placeholder="Description" />'
+                . '<input type="text" name="priority" placeholder="Priority (low/normal/high)" />'
+                . '<input type="date" name="due_date" />'
+                . '<input type="number" name="assignee_id" placeholder="Assignee ID (optional)" />'
+                . '<button class="button" type="submit">Add Task</button>'
+                . '</form>';
+        }
+        echo '<table class="widefat fixed striped"><thead><tr><th>ID</th><th>Project</th><th>Title</th><th>Assignee</th><th>Status</th></tr></thead><tbody id="wfp-tasks-body"><tr><td colspan="5">Loading...</td></tr></tbody></table>';
+        echo '</div>';
     }
 
     public static function renderReports(): void
@@ -121,7 +144,14 @@ class Menu
 
     public static function renderSettings(): void
     {
-        echo '<div class="wrap"><h1>Settings</h1><div id="wfp-admin-settings"></div></div>';
+        echo '<div class="wrap"><h1>Settings</h1>';
+        echo '<form id="wfp-settings-form" style="display:flex;gap:12px;align-items:center;margin:12px 0">'
+           . '<label>Workweek: <select name="workweek_days"><option value="6">6 days</option><option value="7">7 days</option></select></label>'
+           . '<label>Leave categories (comma separated): <input type="text" name="leave_categories" placeholder="Casual,Sick" /></label>'
+           . '<button class="button button-primary" type="submit">Save</button>'
+           . '</form>';
+        echo '<div id="wfp-settings-status"></div>';
+        echo '</div>';
     }
 
     public static function renderEmployeeDashboard(): void

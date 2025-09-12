@@ -125,6 +125,108 @@ class Routes
                 ],
             ],
         ]);
+
+        // Settings (workweek, leave categories)
+        register_rest_route('wfp/v1', '/settings', [
+            [
+                'methods' => 'GET',
+                'callback' => [self::class, 'getSettings'],
+                'permission_callback' => function () {
+                    return current_user_can('wfp_manage_settings');
+                },
+            ],
+            [
+                'methods' => 'POST',
+                'callback' => [self::class, 'saveSettings'],
+                'permission_callback' => function () {
+                    return current_user_can('wfp_manage_settings');
+                },
+                'args' => [
+                    'workweek_days' => [ 'type' => 'integer', 'required' => true ],
+                    'leave_categories' => [ 'type' => 'array', 'required' => false ],
+                ],
+            ],
+        ]);
+
+        // Users (for assignee selection)
+        register_rest_route('wfp/v1', '/users', [
+            'methods' => 'GET',
+            'callback' => [self::class, 'getUsers'],
+            'permission_callback' => function () {
+                return current_user_can('wfp_manage_projects') || current_user_can('wfp_manage_employees');
+            },
+        ]);
+
+        // Projects
+        register_rest_route('wfp/v1', '/projects', [
+            [
+                'methods' => 'GET',
+                'callback' => [self::class, 'getProjects'],
+                'permission_callback' => function () { return current_user_can('wfp_manage_projects') || current_user_can('wfp_view_reports'); },
+            ],
+            [
+                'methods' => 'POST',
+                'callback' => [self::class, 'createProject'],
+                'permission_callback' => function () { return current_user_can('wfp_manage_projects'); },
+                'args' => [
+                    'name' => [ 'type' => 'string', 'required' => true ],
+                    'description' => [ 'type' => 'string', 'required' => false ],
+                    'deadline' => [ 'type' => 'string', 'required' => false ],
+                ],
+            ],
+        ]);
+
+        // Tasks
+        register_rest_route('wfp/v1', '/tasks', [
+            [
+                'methods' => 'GET',
+                'callback' => [self::class, 'getTasks'],
+                'permission_callback' => function () { return current_user_can('read'); },
+                'args' => [ 'project_id' => [ 'type' => 'integer', 'required' => false ], 'mine' => [ 'type' => 'boolean', 'required' => false ] ],
+            ],
+            [
+                'methods' => 'POST',
+                'callback' => [self::class, 'createTask'],
+                'permission_callback' => function () { return current_user_can('wfp_manage_tasks') || current_user_can('wfp_manage_projects'); },
+                'args' => [
+                    'project_id' => [ 'type' => 'integer', 'required' => true ],
+                    'assignee_id' => [ 'type' => 'integer', 'required' => false ],
+                    'title' => [ 'type' => 'string', 'required' => true ],
+                    'description' => [ 'type' => 'string', 'required' => false ],
+                    'priority' => [ 'type' => 'string', 'required' => false ],
+                    'due_date' => [ 'type' => 'string', 'required' => false ],
+                ],
+            ],
+        ]);
+
+        register_rest_route('wfp/v1', '/tasks/(?P<id>\\d+)/status', [
+            'methods' => 'POST',
+            'callback' => [self::class, 'updateTaskStatus'],
+            'permission_callback' => function () { return current_user_can('wfp_manage_tasks') || current_user_can('wfp_manage_projects'); },
+            'args' => [ 'status' => [ 'type' => 'string', 'required' => true ] ],
+        ]);
+
+        // Time logs
+        register_rest_route('wfp/v1', '/time-logs/start', [
+            'methods' => 'POST',
+            'callback' => [self::class, 'startTimeLog'],
+            'permission_callback' => function () { return current_user_can('read'); },
+            'args' => [ 'task_id' => [ 'type' => 'integer', 'required' => true ] ],
+        ]);
+        register_rest_route('wfp/v1', '/time-logs/stop', [
+            'methods' => 'POST',
+            'callback' => [self::class, 'stopTimeLog'],
+            'permission_callback' => function () { return current_user_can('read'); },
+            'args' => [ 'task_id' => [ 'type' => 'integer', 'required' => true ] ],
+        ]);
+
+        // Reports
+        register_rest_route('wfp/v1', '/reports/time', [
+            'methods' => 'GET',
+            'callback' => [self::class, 'getTimeReport'],
+            'permission_callback' => function () { return current_user_can('wfp_view_reports') || current_user_can('wfp_manage_projects'); },
+            'args' => [ 'user_id' => [ 'type' => 'integer', 'required' => false ], 'project_id' => [ 'type' => 'integer', 'required' => false ] ],
+        ]);
     }
 
     public static function getDashboardSummary(\WP_REST_Request $req)
@@ -169,6 +271,130 @@ class Routes
         }
 
         return new \WP_Error('wfp_no_clockin', __('No active clock-in found.', 'workflux-pro'), ['status' => 400]);
+    }
+
+    public static function getSettings(\WP_REST_Request $req)
+    {
+        $workweek = (int) get_option('wfp_workweek_days', 6);
+        $cats = get_option('wfp_leave_categories', ['Casual', 'Sick']);
+        if (!is_array($cats)) { $cats = []; }
+        return [ 'workweek_days' => $workweek, 'leave_categories' => array_values($cats) ];
+    }
+
+    public static function saveSettings(\WP_REST_Request $req)
+    {
+        $workweek = (int) $req->get_param('workweek_days');
+        $cats = $req->get_param('leave_categories');
+        if ($workweek !== 6 && $workweek !== 7) {
+            return new \WP_Error('wfp_bad_setting', __('Workweek must be 6 or 7', 'workflux-pro'), ['status' => 400]);
+        }
+        if (!is_array($cats)) { $cats = []; }
+        $cats = array_values(array_filter(array_map('sanitize_text_field', $cats)));
+        update_option('wfp_workweek_days', $workweek);
+        update_option('wfp_leave_categories', $cats);
+        return ['ok' => true];
+    }
+
+    public static function getUsers(\WP_REST_Request $req)
+    {
+        $users = get_users(['fields' => ['ID', 'display_name']]);
+        return array_map(function($u){ return ['id' => (int)$u->ID, 'name' => $u->display_name]; }, $users);
+    }
+
+    public static function getProjects(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_projects';
+        $rows = $wpdb->get_results("SELECT id, name, description, deadline, status, created_by, created_at FROM $t ORDER BY id DESC LIMIT 200", ARRAY_A);
+        return ['items' => $rows ?: []];
+    }
+
+    public static function createProject(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_projects';
+        $name = sanitize_text_field((string)$req->get_param('name'));
+        $desc = sanitize_textarea_field((string)$req->get_param('description'));
+        $deadline = sanitize_text_field((string)$req->get_param('deadline'));
+        if (!$name) { return new \WP_Error('wfp_name_required', __('Name required', 'workflux-pro'), ['status' => 400]); }
+        $wpdb->insert($t, [ 'name' => $name, 'description' => $desc ?: null, 'deadline' => $deadline ?: null, 'status' => 'active', 'created_by' => get_current_user_id() ]);
+        return ['id' => (int)$wpdb->insert_id];
+    }
+
+    public static function getTasks(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_tasks';
+        $project_id = (int) $req->get_param('project_id');
+        $mine = (bool) $req->get_param('mine');
+        $where = '1=1'; $params = [];
+        if ($project_id) { $where .= ' AND project_id = %d'; $params[] = $project_id; }
+        if ($mine) { $where .= ' AND assignee_id = %d'; $params[] = get_current_user_id(); }
+        $sql = $wpdb->prepare("SELECT id, project_id, assignee_id, title, description, priority, due_date, status, created_at FROM $t WHERE $where ORDER BY id DESC LIMIT 200", $params);
+        $rows = $wpdb->get_results($sql, ARRAY_A);
+        return ['items' => $rows ?: []];
+    }
+
+    public static function createTask(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_tasks';
+        $project_id = (int) $req->get_param('project_id');
+        $assignee_id = (int) $req->get_param('assignee_id');
+        $title = sanitize_text_field((string)$req->get_param('title'));
+        $description = sanitize_textarea_field((string)$req->get_param('description'));
+        $priority = sanitize_text_field((string)$req->get_param('priority')) ?: 'normal';
+        $due_date = sanitize_text_field((string)$req->get_param('due_date'));
+        if (!$project_id || !$title) { return new \WP_Error('wfp_bad_task', __('Project and title required', 'workflux-pro'), ['status' => 400]); }
+        $wpdb->insert($t, [ 'project_id' => $project_id, 'assignee_id' => $assignee_id ?: null, 'title' => $title, 'description' => $description ?: null, 'priority' => $priority, 'due_date' => $due_date ?: null, 'status' => 'todo' ]);
+        return ['id' => (int)$wpdb->insert_id];
+    }
+
+    public static function updateTaskStatus(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_tasks';
+        $id = (int) $req->get_param('id');
+        $status = sanitize_text_field((string)$req->get_param('status'));
+        $wpdb->update($t, [ 'status' => $status ], [ 'id' => $id ]);
+        return ['id' => $id, 'status' => $status];
+    }
+
+    public static function startTimeLog(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_time_logs';
+        $task_id = (int) $req->get_param('task_id');
+        $user_id = get_current_user_id();
+        // Close any open logs for this user
+        $open = $wpdb->get_row($wpdb->prepare("SELECT id, started_at FROM $t WHERE user_id = %d AND ended_at IS NULL ORDER BY id DESC LIMIT 1", $user_id));
+        if ($open) {
+            $started = strtotime($open->started_at);
+            $dur = (int) round((time() - $started) / 60);
+            $wpdb->update($t, [ 'ended_at' => current_time('mysql'), 'duration_minutes' => max(1,$dur) ], [ 'id' => $open->id ]);
+        }
+        $wpdb->insert($t, [ 'task_id' => $task_id, 'user_id' => $user_id, 'started_at' => current_time('mysql') ]);
+        return ['id' => (int)$wpdb->insert_id];
+    }
+
+    public static function stopTimeLog(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_time_logs';
+        $task_id = (int) $req->get_param('task_id');
+        $user_id = get_current_user_id();
+        $row = $wpdb->get_row($wpdb->prepare("SELECT id, started_at FROM $t WHERE user_id = %d AND task_id = %d AND ended_at IS NULL ORDER BY id DESC LIMIT 1", $user_id, $task_id));
+        if (!$row) { return new \WP_Error('wfp_no_open_log', __('No open log', 'workflux-pro'), ['status' => 400]); }
+        $started = strtotime($row->started_at);
+        $dur = (int) round((time() - $started) / 60);
+        $wpdb->update($t, [ 'ended_at' => current_time('mysql'), 'duration_minutes' => max(1,$dur) ], [ 'id' => $row->id ]);
+        return ['id' => (int)$row->id, 'duration_minutes' => max(1,$dur) ];
+    }
+
+    public static function getTimeReport(\WP_REST_Request $req)
+    {
+        global $wpdb; $t = $wpdb->prefix . 'wfp_time_logs'; $tasks = $wpdb->prefix . 'wfp_tasks'; $projects = $wpdb->prefix . 'wfp_projects';
+        $user_id = (int) $req->get_param('user_id');
+        $project_id = (int) $req->get_param('project_id');
+        $where = '1=1'; $params = [];
+        if ($user_id) { $where .= ' AND l.user_id = %d'; $params[] = $user_id; }
+        if ($project_id) { $where .= ' AND t.project_id = %d'; $params[] = $project_id; }
+        $sql = $wpdb->prepare("SELECT t.project_id, SUM(l.duration_minutes) AS minutes FROM $t l JOIN $tasks t ON t.id = l.task_id WHERE $where GROUP BY t.project_id", $params);
+        $rows = $wpdb->get_results($sql, ARRAY_A);
+        return ['items' => $rows ?: []];
     }
 
     public static function getMyAttendance(\WP_REST_Request $req)
