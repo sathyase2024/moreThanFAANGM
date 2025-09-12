@@ -156,9 +156,9 @@ class Menu
            . '<input type="date" id="wfp-filter-to" />'
            . '<button class="button" id="wfp-run-report">Run</button>'
            . '</div>';
-        echo '<h2>Attendance</h2>';
+        echo '<h2>Attendance <button class="button" id="wfp-export-attendance">Export CSV</button></h2>';
         echo '<table class="widefat fixed striped"><thead><tr><th>User</th><th>Clock In</th><th>Clock Out</th><th>Activity</th></tr></thead><tbody id="wfp-report-attendance"><tr><td colspan="4">Use filters and run</td></tr></tbody></table>';
-        echo '<h2 style="margin-top:20px">Project Time Logs</h2>';
+        echo '<h2 style="margin-top:20px">Project Time Logs <button class="button" id="wfp-export-timelogs">Export CSV</button></h2>';
         echo '<table class="widefat fixed striped"><thead><tr><th>User</th><th>Project</th><th>Task</th><th>Start</th><th>End</th><th>Minutes</th></tr></thead><tbody id="wfp-report-time"><tr><td colspan="6">Use filters and run</td></tr></tbody></table>';
         echo '</div>';
     }

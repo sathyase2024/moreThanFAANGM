@@ -211,6 +211,68 @@
     });
   }
 
+  function populateUsers(){
+    var userSelect = document.getElementById('wfp-filter-user');
+    if(!userSelect) return;
+    api('users').then(function(users){
+      (users||[]).forEach(function(u){
+        var opt = document.createElement('option'); opt.value = u.id; opt.textContent = u.name + ' (#'+u.id+')'; userSelect.appendChild(opt);
+      });
+    });
+  }
+
+  function runReports(){
+    var runBtn = document.getElementById('wfp-run-report');
+    if(!runBtn) return;
+    var userSelect = document.getElementById('wfp-filter-user');
+    var from = document.getElementById('wfp-filter-from');
+    var to = document.getElementById('wfp-filter-to');
+    var attBody = document.getElementById('wfp-report-attendance');
+    var tlBody = document.getElementById('wfp-report-time');
+    var exportAtt = document.getElementById('wfp-export-attendance');
+    var exportTL = document.getElementById('wfp-export-timelogs');
+
+    function toQuery(params){
+      var q = Object.keys(params).filter(function(k){ return params[k] !== '' && params[k] !== null && params[k] !== undefined; })
+        .map(function(k){ return encodeURIComponent(k)+'='+encodeURIComponent(params[k]); }).join('&');
+      return q ? ('?'+q) : '';
+    }
+
+    function render(){
+      var params = { user_id: userSelect.value || '', from: from.value || '', to: to.value || '' };
+      api('reports/attendance'+toQuery(params)).then(function(data){
+        attBody.innerHTML = '';
+        (data.items||[]).forEach(function(r){
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>'+(r.user_name||r.user_id)+'</td><td>'+ (r.clock_in||'') +'</td><td>'+ (r.clock_out||'') +'</td><td>'+ (r.activity||'') +'</td>';
+          attBody.appendChild(tr);
+        });
+      });
+      api('reports/time-logs'+toQuery(params)).then(function(data){
+        tlBody.innerHTML = '';
+        (data.items||[]).forEach(function(r){
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>'+(r.user_name||r.user_id)+'</td><td>'+ (r.project_name||r.project_id) +'</td><td>'+ (r.task_title||r.task_id) +'</td><td>'+ (r.started_at||'') +'</td><td>'+ (r.ended_at||'') +'</td><td>'+ (r.duration_minutes||0) +'</td>';
+          tlBody.appendChild(tr);
+        });
+      });
+    }
+
+    function exportTable(tbody, headers, filename){
+      var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr')).map(function(tr){
+        return Array.prototype.slice.call(tr.children).map(function(td){ return '"'+(td.textContent||'').replace(/"/g,'""')+'"'; }).join(',');
+      });
+      rows.unshift(headers.join(','));
+      var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
+    }
+
+    runBtn.addEventListener('click', function(){ render(); });
+    if (exportAtt) exportAtt.addEventListener('click', function(){ exportTable(attBody, ['User','Clock In','Clock Out','Activity'], 'attendance.csv'); });
+    if (exportTL) exportTL.addEventListener('click', function(){ exportTable(tlBody, ['User','Project','Task','Start','End','Minutes'], 'time_logs.csv'); });
+  }
+
   function onAdminClick(e){
     var a = e.target;
     if (a.matches('[data-leave-approve]')){
@@ -252,5 +314,7 @@
   renderEmployees();
   renderProjects();
   renderSettings();
+  populateUsers();
+  runReports();
 })();
 
