@@ -136,6 +136,14 @@ class Menu
                 . '</form>';
         }
         echo '<table class="widefat fixed striped"><thead><tr><th>ID</th><th>Project</th><th>Title</th><th>Assignee</th><th>Status</th></tr></thead><tbody id="wfp-tasks-body"><tr><td colspan="5">Loading...</td></tr></tbody></table>';
+        echo '<h2 style="margin-top:20px">Members</h2>';
+        echo '<form id="wfp-member-form" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap">'
+            . '<input type="number" name="project_id" placeholder="Project ID" required />'
+            . '<input type="number" name="user_id" placeholder="User ID" required />'
+            . '<input type="text" name="role" placeholder="Role (optional)" />'
+            . '<button class="button" type="submit">Add Member</button>'
+            . '</form>';
+        echo '<table class="widefat fixed striped"><thead><tr><th>Project</th><th>User</th><th>Role</th><th>Action</th></tr></thead><tbody id="wfp-members-body"><tr><td colspan="4">Enter a Project ID to load</td></tr></tbody></table>';
         echo '</div>';
     }
 

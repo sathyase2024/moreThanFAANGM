@@ -479,6 +479,13 @@ class Routes
         global $wpdb; $t = $wpdb->prefix . 'wfp_time_logs';
         $task_id = (int) $req->get_param('task_id');
         $user_id = get_current_user_id();
+        // Enforce project membership
+        $task = $wpdb->get_row($wpdb->prepare('SELECT project_id FROM ' . $wpdb->prefix . 'wfp_tasks WHERE id = %d', $task_id));
+        if (!$task) { return new \WP_Error('wfp_no_task', __('Task not found', 'workflux-pro'), ['status' => 404]); }
+        if (!self::isManagement()) {
+            $pm = $wpdb->get_var($wpdb->prepare('SELECT id FROM ' . $wpdb->prefix . 'wfp_project_members WHERE project_id = %d AND user_id = %d', $task->project_id, $user_id));
+            if (!$pm) { return new \WP_Error('wfp_not_member', __('Not a member of this project', 'workflux-pro'), ['status' => 403]); }
+        }
         // Close any open logs for this user
         $open = $wpdb->get_row($wpdb->prepare("SELECT id, started_at FROM $t WHERE user_id = %d AND ended_at IS NULL ORDER BY id DESC LIMIT 1", $user_id));
         if ($open) {
