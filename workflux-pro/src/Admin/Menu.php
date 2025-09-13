@@ -112,12 +112,12 @@ class Menu
         } else {
             echo '<h2>My Leave Requests</h2>';
             echo '<form id="wfp-leave-form" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap">'
-               + '<input type="text" name="type" placeholder="Type (e.g., Casual)" required />'
-               + '<input type="date" name="start_date" required />'
-               + '<input type="date" name="end_date" required />'
-               + '<input type="text" name="reason" placeholder="Reason (optional)" />'
-               + '<button class="button button-primary" type="submit">Submit</button>'
-               + '</form>';
+               . '<input type="text" name="type" placeholder="Type (e.g., Casual)" required />'
+               . '<input type="date" name="start_date" required />'
+               . '<input type="date" name="end_date" required />'
+               . '<input type="text" name="reason" placeholder="Reason (optional)" />'
+               . '<button class="button button-primary" type="submit">Submit</button>'
+               . '</form>';
             echo '<table class="widefat fixed striped"><thead><tr><th>Type</th><th>Dates</th><th>Reason</th><th>Status</th></tr></thead><tbody id="wfp-my-leaves-body"><tr><td colspan="4">Loading...</td></tr></tbody></table>';
         }
         echo '</div>';
@@ -138,23 +138,25 @@ class Menu
         echo '<h2 style="margin-top:20px">Tasks</h2>';
         if (current_user_can('wfp_manage_tasks') || current_user_can('wfp_manage_projects')) {
             echo '<form id="wfp-task-form" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap">'
-                . '<input type="number" name="project_id" placeholder="Project ID" required />'
+                . '<input type="text" name="project_id" list="wfp-projects-list" placeholder="Project (type to search)" required />'
                 . '<input type="text" name="title" placeholder="Task title" required />'
                 . '<input type="text" name="description" placeholder="Description" />'
                 . '<input type="text" name="priority" placeholder="Priority (low/normal/high)" />'
                 . '<input type="date" name="due_date" />'
-                . '<input type="number" name="assignee_id" placeholder="Assignee ID (optional)" />'
+                . '<input type="text" name="assignee_id" list="wfp-users-list" placeholder="Assignee (type to search)" />'
                 . '<button class="button" type="submit">Add Task</button>'
                 . '</form>';
         }
         echo '<table class="widefat fixed striped"><thead><tr><th>ID</th><th>Project</th><th>Title</th><th>Assignee</th><th>Status</th></tr></thead><tbody id="wfp-tasks-body"><tr><td colspan="5">Loading...</td></tr></tbody></table>';
         echo '<h2 style="margin-top:20px">Members</h2>';
         echo '<form id="wfp-member-form" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap">'
-            . '<input type="number" name="project_id" placeholder="Project ID" required />'
-            . '<input type="number" name="user_id" placeholder="User ID" required />'
+            . '<input type="text" name="project_id" list="wfp-projects-list" placeholder="Project (type to search)" required />'
+            . '<input type="text" name="user_id" list="wfp-users-list" placeholder="User (type to search)" required />'
             . '<input type="text" name="role" placeholder="Role (optional)" />'
             . '<button class="button" type="submit">Add Member</button>'
             . '</form>';
+        echo '<datalist id="wfp-users-list"></datalist>';
+        echo '<datalist id="wfp-projects-list"></datalist>';
         echo '<table class="widefat fixed striped"><thead><tr><th>Project</th><th>User</th><th>Role</th><th>Action</th></tr></thead><tbody id="wfp-members-body"><tr><td colspan="4">Enter a Project ID to load</td></tr></tbody></table>';
         echo '</div>';
     }

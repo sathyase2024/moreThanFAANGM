@@ -161,11 +161,15 @@
     if (pBody){
       api('projects').then(function(data){
         pBody.innerHTML = '';
+        var projects = (data.items||[]);
         (data.items||[]).forEach(function(p){
           var tr = document.createElement('tr');
           tr.innerHTML = '<td>' + p.name + ' (ID ' + p.id + ')</td><td>' + (p.deadline||'-') + '</td><td>' + (p.status||'-') + '</td>';
           pBody.appendChild(tr);
         });
+        // populate datalist
+        var dl = document.getElementById('wfp-projects-list');
+        if (dl){ dl.innerHTML = ''; projects.forEach(function(p){ var opt = document.createElement('option'); opt.value = p.id + ' - ' + p.name; dl.appendChild(opt); }); }
       });
     }
 
@@ -204,10 +208,17 @@
       mForm.addEventListener('submit', function(e){
         e.preventDefault();
         var data = new FormData(mForm); var payload = {}; data.forEach(function(v,k){ payload[k]=v; });
-        api('projects/'+payload.project_id+'/members', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }).then(function(){ loadMembers(payload.project_id); });
+        // parse IDs if typed as "123 - Name"
+        function parseId(val){ var m = (val||'').match(/^\s*(\d+)/); return m ? parseInt(m[1],10) : parseInt(val,10) || ''; }
+        var projectId = parseId(payload.project_id);
+        var userId = parseId(payload.user_id);
+        api('projects/'+projectId+'/members', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ project_id: projectId, user_id: userId, role: payload.role||'' }) })
+          .then(function(){ loadMembers(projectId); })
+          .catch(function(err){ alert('Add member failed: '+err); });
       });
       mForm.querySelector('input[name="project_id"]').addEventListener('change', function(){
-        loadMembers(this.value);
+        var m = (this.value||'').match(/^(\d+)/); var pid = m ? m[1] : this.value;
+        loadMembers(pid);
       });
     }
 
@@ -241,10 +252,12 @@
 
   function populateUsers(){
     var userSelect = document.getElementById('wfp-filter-user');
+    var userDL = document.getElementById('wfp-users-list');
     if(!userSelect) return;
     api('users').then(function(users){
       (users||[]).forEach(function(u){
         var opt = document.createElement('option'); opt.value = u.id; opt.textContent = u.name + ' (#'+u.id+')'; userSelect.appendChild(opt);
+        if (userDL){ var o2 = document.createElement('option'); o2.value = u.id + ' - ' + u.name; userDL.appendChild(o2); }
       });
     });
   }
